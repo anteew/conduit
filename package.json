@@ -1,0 +1,17 @@
+{
+  "name": "conduit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "build": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.8.1",
+    "@types/ws": "^8.18.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "ws": "^8.18.3"
+  }
+}
