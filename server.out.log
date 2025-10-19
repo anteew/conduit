@@ -1474,3 +1474,8 @@ Conduit WS on   127.0.0.1:9088
 [HTTP] octet-stream drained: 0.0 MB in 0.000s (84.6 MB/s)
 [HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885445843_1wiwu2gwu8y.bin)
 [HTTP] octet-stream drained: 0.0 MB in 0.000s (151.1 MB/s)
+[Blob] Backend: local
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088

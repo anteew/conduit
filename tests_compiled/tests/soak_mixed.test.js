@@ -85,7 +85,7 @@ function analyzeMemoryTrend() {
     const increaseRatio = increases / (memorySnapshots.length - 1);
     // For short tests (<5 min), be more lenient with growth as GC may not have run
     const isShortTest = DURATION_MIN < 5;
-    const growthThreshold = isShortTest ? 100 : 20;
+    const growthThreshold = isShortTest ? 100 : 10;
     const stable = Math.abs(growth) < growthThreshold || increaseRatio < 0.7;
     let trend = 'stable';
     if (growth > growthThreshold * 2.5)
@@ -179,14 +179,19 @@ async function wsClient(id, endTime) {
             }
         });
         ws.on('close', () => {
-            metrics.activeWsConnections--;
+            if (metrics.activeWsConnections > 0) {
+                metrics.activeWsConnections--;
+            }
             clearInterval(creditTimer);
             resolve();
         });
         ws.on('error', (err) => {
             recordError('ws_error');
+            if (metrics.activeWsConnections > 0) {
+                metrics.activeWsConnections--;
+            }
             clearInterval(creditTimer);
-            ws.close();
+            resolve();
         });
     });
 }

@@ -30,7 +30,7 @@
     </section>
 
     <section>
-      <h3>2) Upload (application/octet-stream)</h3>
+      <h3>2) Upload (application/octet-stream) - Legacy</h3>
       <input type="file" id="file" />
       <div>
         <button id="uploadAsync">Upload (async 202)</button>
@@ -38,6 +38,18 @@
       </div>
       <div class="log" id="uploadLog"></div>
       <small>Note: Sync requires server env <code>CONDUIT_UPLOAD_SYNC=true</code> to measure drain fully.</small>
+    </section>
+
+    <section id="multipartSection">
+      <h3>2b) Upload (multipart/form-data) - NEW T5010</h3>
+      <label>Files (multiple allowed): <input type="file" id="multipartFile" multiple /></label>
+      <label>Metadata (JSON):</label>
+      <textarea id="multipartMetadata" placeholder='{"userId":"user123","tags":"important"}'></textarea>
+      <div>
+        <button id="uploadMultipart">Upload Multipart</button>
+      </div>
+      <div class="log" id="multipartLog"></div>
+      <small>Limits: Max 10 parts, 50 fields, 100MB per part (configurable via env)</small>
     </section>
 
     <section>
@@ -56,6 +68,32 @@
         <button id="getMetrics">GET /v1/metrics</button>
       </div>
       <div class="log" id="metricsLog"></div>
+    </section>
+
+    <section id="perfPanel">
+      <h3>5) Performance Dashboard (T5083)</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+        <div style="padding: 8px; background: #f0f0f0; border-radius: 6px;">
+          <div style="font-size: 11px; color: #666;">HTTP Requests/min</div>
+          <div id="perfHttpRate" style="font-size: 20px; font-weight: 600;">—</div>
+        </div>
+        <div style="padding: 8px; background: #f0f0f0; border-radius: 6px;">
+          <div style="font-size: 11px; color: #666;">WS Connections</div>
+          <div id="perfWsActive" style="font-size: 20px; font-weight: 600;">—</div>
+        </div>
+        <div style="padding: 8px; background: #f0f0f0; border-radius: 6px;">
+          <div style="font-size: 11px; color: #666;">Latency p50 (ms)</div>
+          <div id="perfLatencyP50" style="font-size: 20px; font-weight: 600;">—</div>
+        </div>
+        <div style="padding: 8px; background: #f0f0f0; border-radius: 6px;">
+          <div style="font-size: 11px; color: #666;">Latency p95 (ms)</div>
+          <div id="perfLatencyP95" style="font-size: 20px; font-weight: 600;">—</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: #666;">
+        <span id="perfUpdateTime">Not started</span> | 
+        <button id="perfToggle" style="font-size: 12px;">Start Auto-Update</button>
+      </div>
     </section>
 
     <script src="/ui/ui.js"></script>

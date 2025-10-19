@@ -1,5 +1,5 @@
 import http from 'http';
-const BASE_URL = 'http://127.0.0.1:8787';
+const BASE_URL = 'http://127.0.0.1:9991';
 const CONCURRENT_CLIENTS = 100;
 const TEST_DURATION_MS = 60000; // 1 minute
 const FILE_SIZES = [
@@ -307,8 +307,8 @@ async function runLoadTest() {
     console.log(`  • Average throughput: ${report.throughput.avgMBps} MB/s`);
     console.log(`  • P95 latency: ${report.latency.p95} (most requests faster than this)\n`);
 }
-http.get(`${BASE_URL}/v1/stats`, (res) => {
-    if (res.statusCode === 200) {
+http.get(`${BASE_URL}/v1/stats?stream=test`, (res) => {
+    if (res.statusCode === 200 || res.statusCode === 404) {
         runLoadTest().catch(err => {
             console.error('\n❌ Load test failed:', err);
             process.exit(1);
