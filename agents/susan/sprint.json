@@ -1,58 +1,101 @@
 {
   "ampcode": "v1",
   "waves": [
-    { "id": "Wave-Harness-Core", "parallel": true, "tasks": ["T3001-Plan-Testing", "T3002-Harness", "T3003-Fake-Payloads"] },
-    { "id": "Wave-HTTP-Adapter", "parallel": true, "tasks": ["T3010-HTTP-Bidir", "T3011-HTTP-Errors", "T3012-HTTP-Mime"] },
-    { "id": "Wave-WS-Adapter", "parallel": true, "tasks": ["T3020-WS-Bidir", "T3021-Flow-Credit", "T3022-WS-Errors"] },
-    { "id": "Wave-Perf", "parallel": true, "tasks": ["T3030-Perf-Small", "T3031-Latency", "T3032-Large-Payload"] },
-    { "id": "Wave-CI", "parallel": true, "tasks": ["T3040-CI-Smoke-Benches", "T3041-Coverage"] },
-    { "id": "Wave-Docs", "parallel": true, "tasks": ["T3050-Testing-README", "T3051-Examples"] },
-    { "id": "Wave-HTTP-Gateway-A", "parallel": true, "tasks": ["T4010-Multipart-Streaming", "T4011-Large-Detection", "T4012-JSON-Cap", "T4013-UI-Form"] },
-    { "id": "Wave-HTTP-Gateway-B", "parallel": true, "tasks": ["T4020-CORS", "T4021-Auth-Tokens", "T4022-Rate-Limits", "T4023-Docs-HTTP-UX"] },
-    { "id": "Wave-Observability", "parallel": true, "tasks": ["T4030-HTTP-JSONL-Logs", "T4031-WS-JSONL-Logs", "T4032-Metrics-Expand", "T4033-Record-Replay"] },
-    { "id": "Wave-Concurrency", "parallel": true, "tasks": ["T4040-Upload-Concurrency", "T4041-JSON-Body-Memory-Caps", "T4042-KeepAlive-Tuning"] },
-    { "id": "Wave-WS-Gateway", "parallel": true, "tasks": ["T4050-WS-Size-Limits", "T4051-WS-Rate-Limits", "T4052-WS-Backpressure", "T4053-Docs-WS-UX"] },
-    { "id": "Wave-Load-Soak", "parallel": true, "tasks": ["T4060-Concurrent-Uploads", "T4061-Concurrent-WS", "T4062-Soak-1h", "T4063-SRE-Runbook"] }
+    { "id": "Wave-HTTP-Multipart-Blob", "parallel": true, "tasks": [
+      "T5010-Multipart-Streaming-Form",
+      "T5011-Blob-SideChannel",
+      "T5012-BlobRef-Enqueue",
+      "T5013-Integrity-Metadata"
+    ]},
+    { "id": "Wave-HTTP-Policy", "parallel": true, "tasks": [
+      "T5020-Large-Detection-Threshold",
+      "T5021-JSON-Cap-Gzip",
+      "T5022-CORS-Preflight",
+      "T5023-Auth-Tokens-OIDC"
+    ]},
+    { "id": "Wave-HTTP-Limits", "parallel": true, "tasks": [
+      "T5030-RateLimits-Quota",
+      "T5031-Concurrency-Caps",
+      "T5032-Timeouts-KeepAlive",
+      "T5033-Header-Size-Limits"
+    ]},
+    { "id": "Wave-Observability", "parallel": true, "tasks": [
+      "T5040-HTTP-JSONL-Logs",
+      "T5041-WS-JSONL-Logs",
+      "T5042-Metrics-Expand",
+      "T5043-Record-Replay-Edge"
+    ]},
+    { "id": "Wave-WS-Hardening", "parallel": true, "tasks": [
+      "T5050-WS-Size-Caps",
+      "T5051-WS-Rate-Limits",
+      "T5052-WS-Backpressure-Strict",
+      "T5053-WS-StickySessions"
+    ]},
+    { "id": "Wave-Reload-Tenancy", "parallel": true, "tasks": [
+      "T5060-ZeroDowntime-Reload",
+      "T5061-Tenant-Partitioning",
+      "T5062-PerTenant-Overlays"
+    ]},
+    { "id": "Wave-Load-Soak", "parallel": true, "tasks": [
+      "T5070-Concurrent-Uploads-100",
+      "T5071-Concurrent-WS-100",
+      "T5072-Soak-1h-Mixed",
+      "T5073-SRE-Runbook-Update"
+    ]},
+    { "id": "Wave-UX-Docs", "parallel": true, "tasks": [
+      "T5080-HTTP-UX-Final",
+      "T5081-WS-UX-Final",
+      "T5082-UI-Multipart-Form",
+      "T5083-UI-Perf-Panel"
+    ]},
+    { "id": "Wave-Exploration", "parallel": false, "tasks": [
+      "T5090-HTTP2-HTTP3-Exploration",
+      "T5091-Resumable-Uploads",
+      "T5092-Codec-CBOR"
+    ]}
   ],
   "tasks": [
-    {"id":"T3001-Plan-Testing","agent":"claude","title":"Write Testing Plan","why":"Shared understanding across agents","allowedFiles":["docs/testing/TESTING-PLAN.md"],"verify":["test -f docs/testing/TESTING-PLAN.md"],"deliverables":["Testing plan doc"]},
-    {"id":"T3002-Harness","agent":"gemini","title":"Add test harness and helpers","why":"Reusable start/stop and HTTP/WS helpers","allowedFiles":["tests/harness.ts","package.json"],"verify":["node --loader ts-node/esm -e \"import('./tests/harness.ts').then(()=>console.log('ok'))\""],"deliverables":["Harness utilities"]},
-    {"id":"T3003-Fake-Payloads","agent":"gemini","title":"Add fake payload generators","why":"Test various data shapes","allowedFiles":["scripts/gen-large-file.sh"],"verify":["./scripts/gen-large-file.sh 1 /tmp/blob.bin && test -s /tmp/blob.bin"],"deliverables":["Generator scripts"]},
-    {"id":"T3010-HTTP-Bidir","agent":"gemini","title":"HTTP bidirectional tests","why":"Verify HTTP→IR and IR→HTTP","allowedFiles":["tests/http_bidir.test.ts","config/rules.yaml"],"verify":["npm run test:unit"],"deliverables":["Test passes and prints ok"]},
-    {"id":"T3011-HTTP-Errors","agent":"gemini","title":"HTTP error mapping tests","why":"Predictable failures","allowedFiles":["tests/http_bidir.test.ts","config/rules.yaml"],"verify":["node --loader ts-node/esm tests/http_bidir.test.ts"],"deliverables":["Negative cases covered"]},
-    {"id":"T3012-HTTP-Mime","agent":"gemini","title":"HTTP MIME handling tests","why":"Exercise content-types","allowedFiles":["tests/http_bidir.test.ts","config/rules.yaml"],"verify":["node --loader ts-node/esm tests/http_bidir.test.ts"],"deliverables":["JSON/plain/octet-stream cases"]},
-    {"id":"T3020-WS-Bidir","agent":"gemini","title":"WS subscribe/deliver tests","why":"Verify WS mapping","allowedFiles":["tests/ws_bidir.test.ts","config/rules.yaml"],"verify":["npm run test:int"],"deliverables":["Test prints WS DELIVER ok"]},
-    {"id":"T3021-Flow-Credit","agent":"gemini","title":"Flow control tests","why":"Ensure backpressure works","allowedFiles":["tests/ws_bidir.test.ts"],"verify":["node --loader ts-node/esm tests/ws_bidir.test.ts"],"deliverables":["Credit window honored"]},
-    {"id":"T3022-WS-Errors","agent":"gemini","title":"WS error mapping tests","why":"Predictable WS semantics","allowedFiles":["tests/ws_bidir.test.ts"],"verify":["node --loader ts-node/esm tests/ws_bidir.test.ts"],"deliverables":["InvalidJSON/UnknownOp covered"]},
-    {"id":"T3030-Perf-Small","agent":"gemini","title":"Small-message throughput benchmark","why":"Measure translator speed","allowedFiles":["tests/perf_small.test.ts"],"verify":["npm run bench:small"],"deliverables":["Throughput numbers"]},
-    {"id":"T3031-Latency","agent":"gemini","title":"Latency measurement","why":"Understand p50/p95 under load","allowedFiles":["tests/perf_small.test.ts"],"verify":["npm run bench:small"],"deliverables":["Latency report"]},
-    {"id":"T3032-Large-Payload","agent":"gemini","title":"Large payload test (100MB)","why":"Ensure streaming safety and responsiveness","allowedFiles":["tests/large_payload.test.ts","scripts/gen-large-file.sh","config/rules.yaml"],"verify":["npm run bench:large"],"deliverables":["Upload does not stall control plane; server responsive"]},
-    {"id":"T3040-CI-Smoke-Benches","agent":"gemini","title":"CI smoke for tests/benches","why":"Green signals on PRs","allowedFiles":[".github/workflows/ci.yml"],"verify":["# CI runs npm run test:unit && npm run test:int"],"deliverables":["Workflow updated"]},
-    {"id":"T3041-Coverage","agent":"claude","title":"Coverage and reporting","why":"Visibility into test breadth","allowedFiles":["README.md","docs/testing/TESTING-PLAN.md"],"verify":["# Manual: read coverage summary"],"deliverables":["Coverage summary in docs"]},
-    {"id":"T3050-Testing-README","agent":"claude","title":"Write Testing README","why":"Make it easy to run locally","allowedFiles":["README.md","docs/testing/TESTING-PLAN.md"],"verify":["# Manual: copy-paste works"],"deliverables":["README testing section"]},
-    {"id":"T3051-Examples","agent":"claude","title":"Add example rules for tests","why":"Self-contained examples","allowedFiles":["config/rules.yaml"],"verify":["# Manual: verify rule coverage"],"deliverables":["rules for all tested endpoints"]},
-    {"id":"T4010-Multipart-Streaming","agent":"gemini","title":"HTTP multipart/form-data streaming upload","why":"Browser form uploads should stream without buffering","allowedFiles":["src/connectors/http.ts","package.json","README.md","docs/rfcs/GATEWAY-HTTP-UX.md","public/index.html","public/ui.js"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\"","npm run test:compile"],"deliverables":["Stream first file part to sink; preserve async/sync modes; progress logs+final MB/s"]},
-    {"id":"T4011-Large-Detection","agent":"gemini","title":"Auto-detect large/binary requests","why":"Route users to upload path by default","allowedFiles":["src/connectors/http.ts","config/rules.yaml","README.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["Binary MIME allowlist + size threshold; route to upload path"]},
-    {"id":"T4012-JSON-Cap","agent":"gemini","title":"JSON caps + gzip suggestion","why":"Protect memory and latency","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["413 on oversize JSON; doc gzip guidance"]},
-    {"id":"T4013-UI-Form","agent":"claude","title":"Add HTML form (multipart) to UI","why":"Let users test browser-native uploads","allowedFiles":["public/index.html","public/ui.js"],"verify":["# Manual: open /ui and submit form"],"deliverables":["Form posts multipart; logs HTTP time; shows mode"]},
-    {"id":"T4020-CORS","agent":"gemini","title":"CORS allowlist + preflight","why":"Enable cross-origin clients safely","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["Env-driven origins; OPTIONS preflight on /v1/*"]},
-    {"id":"T4021-Auth-Tokens","agent":"gemini","title":"Edge token allowlist","why":"Basic protection for HTTP/WS","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Authorization: Bearer and X-Token support via CONDUIT_TOKENS"]},
-    {"id":"T4022-Rate-Limits","agent":"gemini","title":"Per-IP rate/burst limits","why":"Fairness and protection under load","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["Token-bucket per endpoint; env knobs"]},
-    {"id":"T4023-Docs-HTTP-UX","agent":"claude","title":"Finalize HTTP UX RFC","why":"Set expectations and defaults","allowedFiles":["docs/rfcs/GATEWAY-HTTP-UX.md","README.md"],"verify":["rg -n 'multipart' docs/rfcs/GATEWAY-HTTP-UX.md"],"deliverables":["RFC updated with multipart + examples"]},
-    {"id":"T4030-HTTP-JSONL-Logs","agent":"gemini","title":"Structured HTTP JSONL logs","why":"Agent-first observability","allowedFiles":["src/connectors/http.ts","docs/OBSERVABILITY.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["reports/gateway-http.log.jsonl with ts,event,ip,method,path,bytes,durMs,rateMBps,ruleId,status,error"]},
-    {"id":"T4031-WS-JSONL-Logs","agent":"gemini","title":"Structured WS JSONL logs","why":"Trace subscribe/credit/deliver","allowedFiles":["src/connectors/ws.ts","docs/OBSERVABILITY.md"],"verify":["npm run test:compile"],"deliverables":["reports/gateway-ws.log.jsonl with ts,event,stream,connId,credit,deliveries,errors"]},
-    {"id":"T4032-Metrics-Expand","agent":"gemini","title":"Expand metrics with counters/histograms","why":"SRE dashboards & agents","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["curl -sS http://127.0.0.1:9087/v1/metrics"],"deliverables":["Add rule hits, bytes, durations, credit usage"]},
-    {"id":"T4033-Record-Replay","agent":"claude","title":"Record/replay samples for edge","why":"Repro issues across envs","allowedFiles":["README.md","docs/OBSERVABILITY.md"],"verify":["# Manual: doc exists"],"deliverables":["Instructions for CONDUIT_RECORD and replay guidance"]},
-    {"id":"T4040-Upload-Concurrency","agent":"gemini","title":"Concurrent upload handling","why":"Scale to many clients","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Per-conn memory caps, backpressure handling, per-IP concurrent upload limit"]},
-    {"id":"T4041-JSON-Body-Memory-Caps","agent":"gemini","title":"JSON body memory caps","why":"Protect heap under load","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Enforce caps and early 413"]},
-    {"id":"T4042-KeepAlive-Tuning","agent":"gemini","title":"HTTP keep-alive & timeouts","why":"Resilience and resource safety","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["Idle/request timeouts, keep-alive tuning, header limits"]},
-    {"id":"T4050-WS-Size-Limits","agent":"gemini","title":"WS message size caps","why":"Prevent oversized frames","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Cap per-message size; close 1009 on exceed"]},
-    {"id":"T4051-WS-Rate-Limits","agent":"gemini","title":"WS per-conn rate limits","why":"Avoid abuse; fairness","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["node --loader ts-node/esm -e \"console.log('compile only')\""],"deliverables":["Token-bucket per connection; env knobs"]},
-    {"id":"T4052-WS-Backpressure","agent":"gemini","title":"WS delivery backpressure & window","why":"Predictable delivery under load","allowedFiles":["src/connectors/ws.ts","tests/ws_bidir.test.ts"],"verify":["node --loader ts-node/esm tests/ws_bidir.test.ts"],"deliverables":["Window strictly honored; tests for burst and window"]},
-    {"id":"T4053-Docs-WS-UX","agent":"claude","title":"Finalize WS UX RFC","why":"Set developer expectations","allowedFiles":["docs/rfcs/GATEWAY-WS-UX.md","README.md"],"verify":["rg -n 'close codes' docs/rfcs/GATEWAY-WS-UX.md"],"deliverables":["RFC updated with size/rate/credit semantics"]},
-    {"id":"T4060-Concurrent-Uploads","agent":"gemini","title":"Concurrent upload load test","why":"Validate behavior with 100 clients","allowedFiles":["tests/concurrent_uploads.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_uploads.test.js"],"deliverables":["Report: throughput, error rates, memory"]},
-    {"id":"T4061-Concurrent-WS","agent":"gemini","title":"Concurrent WS clients load test","why":"Validate WS scalability","allowedFiles":["tests/concurrent_ws.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_ws.test.js"],"deliverables":["Report: connects/sec, deliveries, memory"]},
-    {"id":"T4062-Soak-1h","agent":"gemini","title":"1-hour soak test (mixed)","why":"Surface leaks/flakes over time","allowedFiles":["tests/soak_mixed.test.ts","README.md"],"verify":["node --loader ts-node/esm tests/soak_mixed.test.ts || true"],"deliverables":["Summary table + guidance"]},
-    {"id":"T4063-SRE-Runbook","agent":"claude","title":"Gateway SRE runbook","why":"Ops guidance for incidents","allowedFiles":["docs/SRE-RUNBOOK.md"],"verify":["test -f docs/SRE-RUNBOOK.md"],"deliverables":["Runbook: checks, logs, metrics, knobs"]}
+    {"id":"T5010-Multipart-Streaming-Form","agent":"gemini","title":"HTTP multipart/form-data streaming upload","why":"Browser form uploads should stream without buffering","allowedFiles":["src/connectors/http.ts","package.json","README.md","docs/rfcs/GATEWAY-HTTP-UX.md","public/index.html","public/ui.js"],"verify":["npm run test:compile"],"deliverables":["Stream first file part to sink; preserve async/sync; progress logs + MB/s; safe limits (size, parts, fields)"]},
+    {"id":"T5011-Blob-SideChannel","agent":"gemini","title":"Blob side-channel (S3/MinIO/local)","why":"Persist large uploads and return blobRef","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Pluggable sink (env-driven); returns {blobId, size, sha256, mime}"]},
+    {"id":"T5012-BlobRef-Enqueue","agent":"gemini","title":"Enqueue envelope with blobRef","why":"Let cores consume blobs via references","allowedFiles":["src/dsl/*","config/rules.yaml","README.md"],"verify":["npm run test:compile"],"deliverables":["Rule to emit enqueue {env:{blobRef,...}} on upload completion (optional)"]},
+    {"id":"T5013-Integrity-Metadata","agent":"gemini","title":"Integrity metadata on uploads","why":"SRE + app validation","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Compute sha256, mime, size; write alongside blob; include in logs"]},
+
+    {"id":"T5020-Large-Detection-Threshold","agent":"gemini","title":"Auto-detect large/binary requests","why":"Route users to upload path by default","allowedFiles":["src/connectors/http.ts","config/rules.yaml","README.md"],"verify":["npm run test:compile"],"deliverables":["Binary MIME allowlist + size threshold; route to upload or reject"]},
+    {"id":"T5021-JSON-Cap-Gzip","agent":"gemini","title":"JSON caps + gzip suggestion","why":"Protect memory and latency","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["413 for oversize JSON; doc gzip guidance; header checks"]},
+    {"id":"T5022-CORS-Preflight","agent":"gemini","title":"CORS allowlist + OPTIONS preflight","why":"Enable cross-origin clients safely","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Env-driven origins; preflight for /v1/* and /ui"]},
+    {"id":"T5023-Auth-Tokens-OIDC","agent":"gemini","title":"Auth tokens (API keys) + OIDC stub","why":"Basic protection now; future-ready","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Authorization: Bearer/X-Token allowlist; OIDC config stub"]},
+
+    {"id":"T5030-RateLimits-Quota","agent":"gemini","title":"Per-IP/token rate/burst quotas","why":"Fairness and protection under load","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token-bucket per endpoint (upload/enqueue/subscribe); env knobs; 429/Retry-After"]},
+    {"id":"T5031-Concurrency-Caps","agent":"gemini","title":"Concurrent upload & request caps","why":"Scale to many clients safely","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Per-IP concurrent upload limit; connection caps; graceful rejects"]},
+    {"id":"T5032-Timeouts-KeepAlive","agent":"gemini","title":"HTTP keep-alive & timeouts","why":"Resilience and resource safety","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Idle/request timeouts; keep-alive tuning; slowloris protection"]},
+    {"id":"T5033-Header-Size-Limits","agent":"gemini","title":"Header size/cookie length limits","why":"Prevent abuse and memory spikes","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Max header size; reject 431 on exceed"]},
+
+    {"id":"T5040-HTTP-JSONL-Logs","agent":"gemini","title":"Structured HTTP JSONL logs","why":"Agent-first observability","allowedFiles":["src/connectors/http.ts","docs/OBSERVABILITY.md","reports/.keep"],"verify":["npm run test:compile"],"deliverables":["reports/gateway-http.log.jsonl: ts,ip,method,path,bytes,mode,ruleId,status,durMs,rateMBps,error"]},
+    {"id":"T5041-WS-JSONL-Logs","agent":"gemini","title":"Structured WS JSONL logs","why":"Trace subscribe/credit/deliver","allowedFiles":["src/connectors/ws.ts","docs/OBSERVABILITY.md","reports/.keep"],"verify":["npm run test:compile"],"deliverables":["reports/gateway-ws.log.jsonl: ts,connId,ip,stream,credit,delivers,closeCode,error"]},
+    {"id":"T5042-Metrics-Expand","agent":"gemini","title":"Expand metrics with counters/histograms","why":"SRE dashboards & agents","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["curl -sS http://127.0.0.1:9087/v1/metrics || true"],"deliverables":["Add rule hits, bytes in/out, request durations, credit usage"]},
+    {"id":"T5043-Record-Replay-Edge","agent":"claude","title":"Record/replay guidance for edge","why":"Repro issues across envs","allowedFiles":["README.md","docs/OBSERVABILITY.md"],"verify":["# Manual: doc exists"],"deliverables":["Instructions for CONDUIT_RECORD and replay pipelines"]},
+
+    {"id":"T5050-WS-Size-Caps","agent":"gemini","title":"WS message size caps","why":"Prevent oversized frames","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Cap per-message size; 1009 close on exceed; doc"]},
+    {"id":"T5051-WS-Rate-Limits","agent":"gemini","title":"WS per-conn rate limits","why":"Avoid abuse; fairness","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token-bucket per connection; env knobs; errors mapped"]},
+    {"id":"T5052-WS-Backpressure-Strict","agent":"gemini","title":"WS delivery backpressure (strict window)","why":"Predictable delivery under load","allowedFiles":["src/connectors/ws.ts","tests/ws_bidir.test.ts"],"verify":["node --loader ts-node/esm tests/ws_bidir.test.ts"],"deliverables":["Exact window behavior; tests for burst/window"]},
+    {"id":"T5053-WS-StickySessions","agent":"gemini","title":"Sticky sessions readiness","why":"LB across many edges","allowedFiles":["README.md"],"verify":["# Manual: doc exists"],"deliverables":["Doc/setup guidance for WS behind LB"]},
+
+    {"id":"T5060-ZeroDowntime-Reload","agent":"gemini","title":"Zero-downtime rules/env reload","why":"Change config without dropping clients","allowedFiles":["src/index.ts","src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["SIGHUP or watch-based reload; graceful drain; health flips"]},
+    {"id":"T5061-Tenant-Partitioning","agent":"gemini","title":"Multi-tenant partitioning","why":"Limits and isolation per tenant","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token→tenant mapping; per-tenant limits; per-tenant metrics tags"]},
+    {"id":"T5062-PerTenant-Overlays","agent":"claude","title":"Per-tenant rule overlays","why":"Custom endpoints without forking","allowedFiles":["config/rules.yaml","docs/RULES-REFERENCE.md"],"verify":["# Manual: rule overlay example present"],"deliverables":["Documented overlay mechanism and example"]},
+
+    {"id":"T5070-Concurrent-Uploads-100","agent":"gemini","title":"Concurrent uploads load test (100 clients)","why":"Validate throughput and memory","allowedFiles":["tests/concurrent_uploads.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_uploads.test.js || true"],"deliverables":["Report: throughput, errors, memory footprint"]},
+    {"id":"T5071-Concurrent-WS-100","agent":"gemini","title":"Concurrent WS clients load test (100)","why":"Validate WS scalability","allowedFiles":["tests/concurrent_ws.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_ws.test.js || true"],"deliverables":["Report: connects/sec, deliveries, memory"]},
+    {"id":"T5072-Soak-1h-Mixed","agent":"gemini","title":"1-hour soak test (HTTP+WS)","why":"Surface leaks/flakes over time","allowedFiles":["tests/soak_mixed.test.ts","README.md"],"verify":["node --loader ts-node/esm tests/soak_mixed.test.ts || true"],"deliverables":["Summary table + follow-ups"]},
+    {"id":"T5073-SRE-Runbook-Update","agent":"claude","title":"Gateway SRE runbook","why":"Ops guidance for incidents","allowedFiles":["docs/SRE-RUNBOOK.md"],"verify":["test -f docs/SRE-RUNBOOK.md"],"deliverables":["Runbook: checks, logs, metrics, knobs"]},
+
+    {"id":"T5080-HTTP-UX-Final","agent":"claude","title":"Finalize HTTP UX RFC with examples","why":"Set expectations and defaults","allowedFiles":["docs/rfcs/GATEWAY-HTTP-UX.md","README.md"],"verify":["rg -n 'multipart' docs/rfcs/GATEWAY-HTTP-UX.md"],"deliverables":["RFC updated with multipart + examples and defaults"]},
+    {"id":"T5081-WS-UX-Final","agent":"claude","title":"Finalize WS UX RFC","why":"Set developer expectations","allowedFiles":["docs/rfcs/GATEWAY-WS-UX.md","README.md"],"verify":["rg -n 'close codes' docs/rfcs/GATEWAY-WS-UX.md"],"deliverables":["RFC updated with size/rate/credit semantics"]},
+    {"id":"T5082-UI-Multipart-Form","agent":"claude","title":"Add HTML form to UI for multipart","why":"Browser-native path test","allowedFiles":["public/index.html","public/ui.js"],"verify":["# Manual: open /ui and submit form"]},
+    {"id":"T5083-UI-Perf-Panel","agent":"claude","title":"UI perf panel","why":"Show current throughput and latencies","allowedFiles":["public/ui.js","public/index.html"],"verify":["# Manual: dashboard displays recent rates"]},
+
+    {"id":"T5090-HTTP2-HTTP3-Exploration","agent":"gemini","title":"HTTP/2 and HTTP/3 exploration","why":"Future performance & transport options","allowedFiles":["README.md"],"verify":["# Manual: doc exists"],"deliverables":["Notes on feasibility, libs, migration path"]},
+    {"id":"T5091-Resumable-Uploads","agent":"gemini","title":"Resumable/chunked uploads design","why":"Robust long-running transfers","allowedFiles":["docs/rfcs/GATEWAY-HTTP-UX.md"],"verify":["rg -n 'resum' docs/rfcs/GATEWAY-HTTP-UX.md"],"deliverables":["Design sketch + phased plan"]},
+    {"id":"T5092-Codec-CBOR","agent":"gemini","title":"CBOR/MessagePack codec option","why":"Compact control frames","allowedFiles":["README.md","docs/rfcs/PROTO-DSL-v0.md"],"verify":["# Manual: doc exists"],"deliverables":["Doc on opt-in codec and impacts"]}
   ]
 }
