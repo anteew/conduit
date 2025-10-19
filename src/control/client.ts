@@ -1,8 +1,8 @@
-import { Duplex, PassThrough, Readable, Writable } from 'stream';
+import { Duplex as DuplexStream, PassThrough, Readable, Writable } from 'stream';
 import { ControlFrame, encodeFrame, decodeLines } from './types.js';
 
-function wrapDuplex(readable: Readable, writable: Writable): Duplex {
-  const d = new (require('stream').Duplex)({
+function wrapDuplex(readable: Readable, writable: Writable): DuplexStream {
+  const d = new DuplexStream({
     read(_size: number) {},
     write(chunk: any, enc: any, cb: any) { (writable as any).write(chunk, enc, cb); }
   });
@@ -12,7 +12,7 @@ function wrapDuplex(readable: Readable, writable: Writable): Duplex {
   return d;
 }
 
-export function makeDuplexPair(): [Duplex, Duplex] {
+export function makeDuplexPair(): [DuplexStream, DuplexStream] {
   const aToB = new PassThrough({ encoding: 'utf8' as any });
   const bToA = new PassThrough({ encoding: 'utf8' as any });
   const A = wrapDuplex(bToA, aToB);
@@ -25,7 +25,7 @@ export class PipeClient {
   private seq = 0;
   private pending = new Map<string, (res: any, err?: any) => void>();
   private onDeliver: ((env: any)=>void) | null = null;
-  constructor(private stream: Duplex, private rec?: (f:any, dir:'in'|'out')=>void) {
+  constructor(private stream: DuplexStream, private rec?: (f:any, dir:'in'|'out')=>void) {
     (stream as any).setEncoding?.('utf8');
     stream.on('data', (chunk: string) => { this.buf += chunk; this.buf = decodeLines(this.buf, (f)=>this.onFrame(f)); });
   }
