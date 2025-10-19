@@ -1,101 +1,145 @@
 {
   "ampcode": "v1",
   "waves": [
-    { "id": "Wave-HTTP-Multipart-Blob", "parallel": true, "tasks": [
-      "T5010-Multipart-Streaming-Form",
-      "T5011-Blob-SideChannel",
-      "T5012-BlobRef-Enqueue",
-      "T5013-Integrity-Metadata"
+    { "id": "Wave-BlobRef-Admin", "parallel": true, "tasks": [
+      "T6101-OctetStream-BlobRef",
+      "T6102-Admin-Reload-Endpoint"
     ]},
-    { "id": "Wave-HTTP-Policy", "parallel": true, "tasks": [
-      "T5020-Large-Detection-Threshold",
-      "T5021-JSON-Cap-Gzip",
-      "T5022-CORS-Preflight",
-      "T5023-Auth-Tokens-OIDC"
+    { "id": "Wave-Queue-Auth", "parallel": true, "tasks": [
+      "T6103-QueueRef-Endpoint",
+      "T6104-Auth-XToken-Allowlist"
     ]},
-    { "id": "Wave-HTTP-Limits", "parallel": true, "tasks": [
-      "T5030-RateLimits-Quota",
-      "T5031-Concurrency-Caps",
-      "T5032-Timeouts-KeepAlive",
-      "T5033-Header-Size-Limits"
+    { "id": "Wave-Limits-Tests", "parallel": true, "tasks": [
+      "T6105-HTTP-HeaderTimeout-Tests",
+      "T6108-WS-Oversize-Error-Test"
     ]},
-    { "id": "Wave-Observability", "parallel": true, "tasks": [
-      "T5040-HTTP-JSONL-Logs",
-      "T5041-WS-JSONL-Logs",
-      "T5042-Metrics-Expand",
-      "T5043-Record-Replay-Edge"
+    { "id": "Wave-Metrics-Docs", "parallel": true, "tasks": [
+      "T6106-Metrics-Expand-Validation",
+      "T6107-Docs-Runbook-Examples"
     ]},
-    { "id": "Wave-WS-Hardening", "parallel": true, "tasks": [
-      "T5050-WS-Size-Caps",
-      "T5051-WS-Rate-Limits",
-      "T5052-WS-Backpressure-Strict",
-      "T5053-WS-StickySessions"
+    { "id": "Wave-Examples-UI", "parallel": true, "tasks": [
+      "T6109-UI-BlobRef-Examples"
     ]},
-    { "id": "Wave-Reload-Tenancy", "parallel": true, "tasks": [
-      "T5060-ZeroDowntime-Reload",
-      "T5061-Tenant-Partitioning",
-      "T5062-PerTenant-Overlays"
-    ]},
-    { "id": "Wave-Load-Soak", "parallel": true, "tasks": [
-      "T5070-Concurrent-Uploads-100",
-      "T5071-Concurrent-WS-100",
-      "T5072-Soak-1h-Mixed",
-      "T5073-SRE-Runbook-Update"
-    ]},
-    { "id": "Wave-UX-Docs", "parallel": true, "tasks": [
-      "T5080-HTTP-UX-Final",
-      "T5081-WS-UX-Final",
-      "T5082-UI-Multipart-Form",
-      "T5083-UI-Perf-Panel"
-    ]},
-    { "id": "Wave-Exploration", "parallel": false, "tasks": [
-      "T5090-HTTP2-HTTP3-Exploration",
-      "T5091-Resumable-Uploads",
-      "T5092-Codec-CBOR"
+    { "id": "Wave-Tenancy-Quotas", "parallel": true, "tasks": [
+      "T6110-Tenant-Quotas-Enforcement"
     ]}
   ],
   "tasks": [
-    {"id":"T5010-Multipart-Streaming-Form","agent":"gemini","title":"HTTP multipart/form-data streaming upload","why":"Browser form uploads should stream without buffering","allowedFiles":["src/connectors/http.ts","package.json","README.md","docs/rfcs/GATEWAY-HTTP-UX.md","public/index.html","public/ui.js"],"verify":["npm run test:compile"],"deliverables":["Stream first file part to sink; preserve async/sync; progress logs + MB/s; safe limits (size, parts, fields)"]},
-    {"id":"T5011-Blob-SideChannel","agent":"gemini","title":"Blob side-channel (S3/MinIO/local)","why":"Persist large uploads and return blobRef","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Pluggable sink (env-driven); returns {blobId, size, sha256, mime}"]},
-    {"id":"T5012-BlobRef-Enqueue","agent":"gemini","title":"Enqueue envelope with blobRef","why":"Let cores consume blobs via references","allowedFiles":["src/dsl/*","config/rules.yaml","README.md"],"verify":["npm run test:compile"],"deliverables":["Rule to emit enqueue {env:{blobRef,...}} on upload completion (optional)"]},
-    {"id":"T5013-Integrity-Metadata","agent":"gemini","title":"Integrity metadata on uploads","why":"SRE + app validation","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Compute sha256, mime, size; write alongside blob; include in logs"]},
-
-    {"id":"T5020-Large-Detection-Threshold","agent":"gemini","title":"Auto-detect large/binary requests","why":"Route users to upload path by default","allowedFiles":["src/connectors/http.ts","config/rules.yaml","README.md"],"verify":["npm run test:compile"],"deliverables":["Binary MIME allowlist + size threshold; route to upload or reject"]},
-    {"id":"T5021-JSON-Cap-Gzip","agent":"gemini","title":"JSON caps + gzip suggestion","why":"Protect memory and latency","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["413 for oversize JSON; doc gzip guidance; header checks"]},
-    {"id":"T5022-CORS-Preflight","agent":"gemini","title":"CORS allowlist + OPTIONS preflight","why":"Enable cross-origin clients safely","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Env-driven origins; preflight for /v1/* and /ui"]},
-    {"id":"T5023-Auth-Tokens-OIDC","agent":"gemini","title":"Auth tokens (API keys) + OIDC stub","why":"Basic protection now; future-ready","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Authorization: Bearer/X-Token allowlist; OIDC config stub"]},
-
-    {"id":"T5030-RateLimits-Quota","agent":"gemini","title":"Per-IP/token rate/burst quotas","why":"Fairness and protection under load","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token-bucket per endpoint (upload/enqueue/subscribe); env knobs; 429/Retry-After"]},
-    {"id":"T5031-Concurrency-Caps","agent":"gemini","title":"Concurrent upload & request caps","why":"Scale to many clients safely","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Per-IP concurrent upload limit; connection caps; graceful rejects"]},
-    {"id":"T5032-Timeouts-KeepAlive","agent":"gemini","title":"HTTP keep-alive & timeouts","why":"Resilience and resource safety","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Idle/request timeouts; keep-alive tuning; slowloris protection"]},
-    {"id":"T5033-Header-Size-Limits","agent":"gemini","title":"Header size/cookie length limits","why":"Prevent abuse and memory spikes","allowedFiles":["src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Max header size; reject 431 on exceed"]},
-
-    {"id":"T5040-HTTP-JSONL-Logs","agent":"gemini","title":"Structured HTTP JSONL logs","why":"Agent-first observability","allowedFiles":["src/connectors/http.ts","docs/OBSERVABILITY.md","reports/.keep"],"verify":["npm run test:compile"],"deliverables":["reports/gateway-http.log.jsonl: ts,ip,method,path,bytes,mode,ruleId,status,durMs,rateMBps,error"]},
-    {"id":"T5041-WS-JSONL-Logs","agent":"gemini","title":"Structured WS JSONL logs","why":"Trace subscribe/credit/deliver","allowedFiles":["src/connectors/ws.ts","docs/OBSERVABILITY.md","reports/.keep"],"verify":["npm run test:compile"],"deliverables":["reports/gateway-ws.log.jsonl: ts,connId,ip,stream,credit,delivers,closeCode,error"]},
-    {"id":"T5042-Metrics-Expand","agent":"gemini","title":"Expand metrics with counters/histograms","why":"SRE dashboards & agents","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["curl -sS http://127.0.0.1:9087/v1/metrics || true"],"deliverables":["Add rule hits, bytes in/out, request durations, credit usage"]},
-    {"id":"T5043-Record-Replay-Edge","agent":"claude","title":"Record/replay guidance for edge","why":"Repro issues across envs","allowedFiles":["README.md","docs/OBSERVABILITY.md"],"verify":["# Manual: doc exists"],"deliverables":["Instructions for CONDUIT_RECORD and replay pipelines"]},
-
-    {"id":"T5050-WS-Size-Caps","agent":"gemini","title":"WS message size caps","why":"Prevent oversized frames","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Cap per-message size; 1009 close on exceed; doc"]},
-    {"id":"T5051-WS-Rate-Limits","agent":"gemini","title":"WS per-conn rate limits","why":"Avoid abuse; fairness","allowedFiles":["src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token-bucket per connection; env knobs; errors mapped"]},
-    {"id":"T5052-WS-Backpressure-Strict","agent":"gemini","title":"WS delivery backpressure (strict window)","why":"Predictable delivery under load","allowedFiles":["src/connectors/ws.ts","tests/ws_bidir.test.ts"],"verify":["node --loader ts-node/esm tests/ws_bidir.test.ts"],"deliverables":["Exact window behavior; tests for burst/window"]},
-    {"id":"T5053-WS-StickySessions","agent":"gemini","title":"Sticky sessions readiness","why":"LB across many edges","allowedFiles":["README.md"],"verify":["# Manual: doc exists"],"deliverables":["Doc/setup guidance for WS behind LB"]},
-
-    {"id":"T5060-ZeroDowntime-Reload","agent":"gemini","title":"Zero-downtime rules/env reload","why":"Change config without dropping clients","allowedFiles":["src/index.ts","src/connectors/http.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["SIGHUP or watch-based reload; graceful drain; health flips"]},
-    {"id":"T5061-Tenant-Partitioning","agent":"gemini","title":"Multi-tenant partitioning","why":"Limits and isolation per tenant","allowedFiles":["src/connectors/http.ts","src/connectors/ws.ts","README.md"],"verify":["npm run test:compile"],"deliverables":["Token→tenant mapping; per-tenant limits; per-tenant metrics tags"]},
-    {"id":"T5062-PerTenant-Overlays","agent":"claude","title":"Per-tenant rule overlays","why":"Custom endpoints without forking","allowedFiles":["config/rules.yaml","docs/RULES-REFERENCE.md"],"verify":["# Manual: rule overlay example present"],"deliverables":["Documented overlay mechanism and example"]},
-
-    {"id":"T5070-Concurrent-Uploads-100","agent":"gemini","title":"Concurrent uploads load test (100 clients)","why":"Validate throughput and memory","allowedFiles":["tests/concurrent_uploads.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_uploads.test.js || true"],"deliverables":["Report: throughput, errors, memory footprint"]},
-    {"id":"T5071-Concurrent-WS-100","agent":"gemini","title":"Concurrent WS clients load test (100)","why":"Validate WS scalability","allowedFiles":["tests/concurrent_ws.test.ts","package.json"],"verify":["npm run test:compile && node tests_compiled/concurrent_ws.test.js || true"],"deliverables":["Report: connects/sec, deliveries, memory"]},
-    {"id":"T5072-Soak-1h-Mixed","agent":"gemini","title":"1-hour soak test (HTTP+WS)","why":"Surface leaks/flakes over time","allowedFiles":["tests/soak_mixed.test.ts","README.md"],"verify":["node --loader ts-node/esm tests/soak_mixed.test.ts || true"],"deliverables":["Summary table + follow-ups"]},
-    {"id":"T5073-SRE-Runbook-Update","agent":"claude","title":"Gateway SRE runbook","why":"Ops guidance for incidents","allowedFiles":["docs/SRE-RUNBOOK.md"],"verify":["test -f docs/SRE-RUNBOOK.md"],"deliverables":["Runbook: checks, logs, metrics, knobs"]},
-
-    {"id":"T5080-HTTP-UX-Final","agent":"claude","title":"Finalize HTTP UX RFC with examples","why":"Set expectations and defaults","allowedFiles":["docs/rfcs/GATEWAY-HTTP-UX.md","README.md"],"verify":["rg -n 'multipart' docs/rfcs/GATEWAY-HTTP-UX.md"],"deliverables":["RFC updated with multipart + examples and defaults"]},
-    {"id":"T5081-WS-UX-Final","agent":"claude","title":"Finalize WS UX RFC","why":"Set developer expectations","allowedFiles":["docs/rfcs/GATEWAY-WS-UX.md","README.md"],"verify":["rg -n 'close codes' docs/rfcs/GATEWAY-WS-UX.md"],"deliverables":["RFC updated with size/rate/credit semantics"]},
-    {"id":"T5082-UI-Multipart-Form","agent":"claude","title":"Add HTML form to UI for multipart","why":"Browser-native path test","allowedFiles":["public/index.html","public/ui.js"],"verify":["# Manual: open /ui and submit form"]},
-    {"id":"T5083-UI-Perf-Panel","agent":"claude","title":"UI perf panel","why":"Show current throughput and latencies","allowedFiles":["public/ui.js","public/index.html"],"verify":["# Manual: dashboard displays recent rates"]},
-
-    {"id":"T5090-HTTP2-HTTP3-Exploration","agent":"gemini","title":"HTTP/2 and HTTP/3 exploration","why":"Future performance & transport options","allowedFiles":["README.md"],"verify":["# Manual: doc exists"],"deliverables":["Notes on feasibility, libs, migration path"]},
-    {"id":"T5091-Resumable-Uploads","agent":"gemini","title":"Resumable/chunked uploads design","why":"Robust long-running transfers","allowedFiles":["docs/rfcs/GATEWAY-HTTP-UX.md"],"verify":["rg -n 'resum' docs/rfcs/GATEWAY-HTTP-UX.md"],"deliverables":["Design sketch + phased plan"]},
-    {"id":"T5092-Codec-CBOR","agent":"gemini","title":"CBOR/MessagePack codec option","why":"Compact control frames","allowedFiles":["README.md","docs/rfcs/PROTO-DSL-v0.md"],"verify":["# Manual: doc exists"],"deliverables":["Doc on opt-in codec and impacts"]}
+    {
+      "id": "T6101-OctetStream-BlobRef",
+      "agent": "amp",
+      "title": "Wire octet-stream /v1/upload to blobSink and return { blobRef }",
+      "why": "Unify large-binary fast path with multipart: stream to BlobSink (local/S3/MinIO) and return a compact blobRef for downstream agents.",
+      "allowedFiles": [
+        "src/connectors/http.ts",
+        "src/backends/**",
+        "docs/BACKENDS.md",
+        "docs/SRE-RUNBOOK.md",
+        "tests/**"
+      ],
+      "verify": [
+        "npm run test:compile",
+        "node -e \"const http=require('http'); const fs=require('fs'); const {spawn}=require('child_process'); const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env:{...process.env,CONDUIT_RULES:'config/rules.yaml',CONDUIT_UPLOAD_SYNC:'true'}}); setTimeout(()=>{ const req=http.request('http://127.0.0.1:9087/v1/upload',{method:'POST',headers:{'content-type':'application/octet-stream'}},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>{console.log(d); srv.kill();});}); req.end(Buffer.alloc(1024*1024,'x')); },800);\""
+      ],
+      "deliverables": [
+        "src/connectors/http.ts",
+        "reports/verification/T6101.log"
+      ]
+    },
+    {
+      "id": "T6102-Admin-Reload-Endpoint",
+      "agent": "amp",
+      "title": "Add POST /v1/admin/reload (auth-protected) to reload DSL and tenants",
+      "why": "Complement SIGHUP with HTTP-triggered reload for ops tooling and CI hooks.",
+      "allowedFiles": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
+      "verify": [
+        "CONDUIT_TOKENS=dev npm run test:compile",
+        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_TOKENS:'dev',CONDUIT_RULES:'config/rules.yaml'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const req=http.request('http://127.0.0.1:9087/v1/admin/reload',{method:'POST',headers:{Authorization:'Bearer dev'}},res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.end(); },800);\""
+      ],
+      "deliverables": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md"]
+    },
+    {
+      "id": "T6103-QueueRef-Endpoint",
+      "agent": "amp",
+      "title": "Add POST /v1/queue to enqueue to Queue backend and return queueRef",
+      "why": "Expose queueRef pattern via HTTP for asynchronous processing.",
+      "allowedFiles": ["src/connectors/http.ts", "src/backends/queue/**", "docs/BACKENDS.md", "tests/**"],
+      "verify": [
+        "CONDUIT_QUEUE_BACKEND=bullmq CONDUIT_QUEUE_REDIS_URL=redis://localhost:6379 npm run test:compile",
+        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_QUEUE_BACKEND:'bullmq',CONDUIT_QUEUE_REDIS_URL:'redis://localhost:6379'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const body=JSON.stringify({queue:'jobs/default',message:{hello:'world'}}); const req=http.request('http://127.0.0.1:9087/v1/queue',{method:'POST',headers:{'content-type':'application/json','content-length':Buffer.byteLength(body)}},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>{console.log(d); srv.kill();});}); req.write(body); req.end(); },800);\""
+      ],
+      "deliverables": ["src/connectors/http.ts", "docs/BACKENDS.md"]
+    },
+    {
+      "id": "T6104-Auth-XToken-Allowlist",
+      "agent": "amp",
+      "title": "Accept X-Token as an alternative to Authorization: Bearer on protected endpoints",
+      "why": "Support simple token clients and curl without Authorization header.",
+      "allowedFiles": ["src/connectors/http.ts", "docs/PRODUCTION-DEPLOYMENT.md"],
+      "verify": [
+        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_TOKENS:'dev'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const body=JSON.stringify({to:'agents/Test/inbox',envelope:{id:'e1'}}); const req=http.request('http://127.0.0.1:9087/v1/enqueue',{method:'POST',headers:{'content-type':'application/json','x-token':'dev','content-length':Buffer.byteLength(body)}},res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.write(body); req.end(); },800);\""
+      ],
+      "deliverables": ["src/connectors/http.ts"]
+    },
+    {
+      "id": "T6105-HTTP-HeaderTimeout-Tests",
+      "agent": "amp",
+      "title": "Add tests for header-size limits (431) and request/headers timeouts",
+      "why": "Ensure slowloris/header abuse protections are validated in CI.",
+      "allowedFiles": ["tests/**", "docs/SRE-RUNBOOK.md"],
+      "verify": ["npm run test:compile && node tests_compiled/tests/concurrent_uploads.test.js"],
+      "deliverables": ["tests/header_limits.test.ts", "tests/slowloris_timeout.test.ts"]
+    },
+    {
+      "id": "T6106-Metrics-Expand-Validation",
+      "agent": "amp",
+      "title": "Validate expanded /v1/metrics (HTTP+WS counters, bytes, p50/p95/p99, per-tenant)",
+      "why": "SRE dashboards and agent-first observability rely on accurate counters.",
+      "allowedFiles": ["tests/**", "docs/OBSERVABILITY.md"],
+      "verify": [
+        "npm run test:compile && node tests_compiled/ws_bidir.test.js",
+        "curl -s http://127.0.0.1:9087/v1/metrics | jq '.http.durations' || true"
+      ],
+      "deliverables": ["tests/metrics_validation.test.ts"]
+    },
+    {
+      "id": "T6107-Docs-Runbook-Examples",
+      "agent": "amp",
+      "title": "Document admin reload, blobRef responses, queueRef usage; update SRE runbook and examples",
+      "why": "Keep operators and developers aligned with the implemented behavior.",
+      "allowedFiles": ["docs/**", "examples/**", "public/**"],
+      "verify": ["rg -n 'blobRef|/v1/admin/reload|/v1/queue' docs examples public -S"],
+      "deliverables": ["docs/SRE-RUNBOOK.md", "docs/BACKENDS.md", "examples/*"]
+    },
+    {
+      "id": "T6108-WS-Oversize-Error-Test",
+      "agent": "amp",
+      "title": "Add explicit WS 1009 oversize-message test and JSONL log assertion",
+      "why": "Ensure consistent error-close behavior and logging for large WS payloads.",
+      "allowedFiles": ["tests/**"],
+      "verify": ["npm run test:compile && node tests_compiled/T3022-ws-errors.test.js"],
+      "deliverables": ["tests/ws_oversize.test.ts"]
+    },
+    {
+      "id": "T6109-UI-BlobRef-Examples",
+      "agent": "amp",
+      "title": "Update UI to display blobRef on upload and provide copy-to-clipboard",
+      "why": "Developer feedback loop for uploads should expose the reference, not raw file paths.",
+      "allowedFiles": ["public/**", "docs/**"],
+      "verify": ["rg -n 'blobRef' public -S"],
+      "deliverables": ["public/index.html", "public/ui.js"]
+    },
+    {
+      "id": "T6110-Tenant-Quotas-Enforcement",
+      "agent": "amp",
+      "title": "Enforce per-tenant quotas consistently (requests/uploads/connections) and tag logs/metrics",
+      "why": "Multi-tenant safety and isolation.",
+      "allowedFiles": ["src/tenancy/**", "src/connectors/http.ts", "src/connectors/ws.ts", "config/tenants.yaml", "docs/**"],
+      "verify": [
+        "CONDUIT_TENANT_CONFIG=config/tenants.yaml npm run test:compile",
+        "node tests_compiled/concurrent_ws.test.js || true"
+      ],
+      "deliverables": ["config/tenants.yaml", "src/tenancy/tenant-manager.ts"]
+    }
   ]
 }
