@@ -1,0 +1,267 @@
+version: proto-dsl/v0
+
+# Default error mappings for all rules
+defaults:
+  onError:
+    InvalidJSON:
+      http:
+        status: 400
+        body:
+          error: InvalidJSON
+          message: Request contains invalid JSON
+      ws:
+        close:
+          code: 1007
+          reason: Invalid JSON
+    UnknownView:
+      http:
+        status: 404
+        body:
+          error: UnknownView
+          message: View not found
+    UnknownStream:
+      http:
+        status: 404
+        body:
+          error: UnknownStream
+          message: Stream not found
+    InvalidEnvelope:
+      http:
+        status: 400
+        body:
+          error: InvalidEnvelope
+          message: Envelope format is invalid
+    UnknownOp:
+      http:
+        status: 400
+        body:
+          error: UnknownOp
+          message: Unknown operation
+      ws:
+        close:
+          code: 1003
+          reason: Unknown operation
+    Unauthorized:
+      http:
+        status: 401
+        body:
+          error: Unauthorized
+          message: Authentication required
+    Forbidden:
+      http:
+        status: 403
+        body:
+          error: Forbidden
+          message: Access denied
+    Backpressure:
+      http:
+        status: 429
+        body:
+          error: Backpressure
+          message: Too many requests
+    Timeout:
+      http:
+        status: 504
+        body:
+          error: Timeout
+          message: Request timeout
+    Internal:
+      http:
+        status: 500
+        body:
+          error: Internal
+          message: Internal server error
+      ws:
+        close:
+          code: 1011
+          reason: Internal server error
+
+# Complete rule set covering all hardcoded endpoints
+rules:
+  # ========================================
+  # HTTP ENDPOINTS
+  # ========================================
+  
+  # Health check endpoint
+  - id: health-check
+    when:
+      http:
+        method: GET
+        path: /health
+    send:
+      http:
+        status: 200
+        body:
+          ok: true
+          version: v0.1
+          features: ["http", "ws", "sse", "dsl"]
+
+  # HTTP enqueue endpoint
+  - id: http-enqueue
+    when:
+      http:
+        method: POST
+        path: /v1/enqueue
+    send:
+      frame:
+        type: enqueue
+        fields:
+          to: $body.to
+          envelope: $body.envelope
+        respond:
+          http:
+            status: 200
+            body: $result
+    onError:
+      InvalidJSON:
+        http:
+          status: 400
+          body:
+            error: invalid json
+      InvalidEnvelope:
+        http:
+          status: 400
+          body:
+            error: bad request
+
+  # HTTP stats endpoint
+  - id: http-stats
+    when:
+      http:
+        method: GET
+        path: /v1/stats
+    send:
+      frame:
+        type: stats
+        fields:
+          stream: $query.stream
+        respond:
+          http:
+            status: 200
+            body: $result
+    onError:
+      UnknownStream:
+        http:
+          status: 400
+          body:
+            error: missing stream
+      Internal:
+        http:
+          status: 500
+          body:
+            error: stats failed
+
+  # HTTP snapshot endpoint
+  - id: http-snapshot
+    when:
+      http:
+        method: GET
+        path: /v1/snapshot
+    send:
+      frame:
+        type: snapshot
+        fields:
+          view: $query.view
+        respond:
+          http:
+            status: 200
+            body: $result
+    onError:
+      UnknownView:
+        http:
+          status: 400
+          body:
+            error: missing view
+      Internal:
+        http:
+          status: 500
+          body:
+            error: snapshot failed
+
+  # HTTP metrics endpoint
+  - id: http-metrics
+    when:
+      http:
+        method: GET
+        path: /v1/metrics
+    send:
+      frame:
+        type: metrics
+        fields: {}
+        respond:
+          http:
+            status: 200
+            body: $result
+    onError:
+      Internal:
+        http:
+          status: 500
+          body:
+            error: metrics failed
+
+  # SSE live endpoint (heartbeat only)
+  # Note: SSE is not fully supported in DSL v0, this is a placeholder
+  # The hardcoded implementation should handle this for now
+  
+  # ========================================
+  # WEBSOCKET ENDPOINTS
+  # ========================================
+  
+  # WebSocket connection subscribe
+  - id: ws-connection-subscribe
+    when:
+      ws:
+        path: /v1/subscribe
+    send:
+      frame:
+        type: subscribe
+        fields:
+          stream: $query.stream
+        respond:
+          ws:
+            message:
+              status: subscribed
+              stream: $query.stream
+    onError:
+      UnknownStream:
+        ws:
+          close:
+            code: 1008
+            reason: Stream required
+
+  # WebSocket message: grant (credit)
+  - id: ws-message-grant
+    when:
+      ws:
+        message:
+          json.has: credit
+    send:
+      frame:
+        type: grant
+        fields:
+          credit: $message.credit
+
+  # WebSocket message: ack
+  - id: ws-message-ack
+    when:
+      ws:
+        message:
+          json.has: ack
+    send:
+      frame:
+        type: ack
+        fields:
+          id: $message.ack
+
+  # WebSocket message: nack
+  - id: ws-message-nack
+    when:
+      ws:
+        message:
+          json.has: nack
+    send:
+      frame:
+        type: nack
+        fields:
+          id: $message.nack
+          delayMs: $message.delayMs
