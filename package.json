@@ -5,7 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "test:compile": "tsc tests/*.test.ts tests/harness.ts --module ES2022 --target ES2022 --moduleResolution Node --allowSyntheticDefaultImports --outDir tests_compiled",
+    "test:unit": "npm run test:compile && node tests_compiled/http_bidir.test.js",
+    "test:int": "npm run test:compile && node tests_compiled/ws_bidir.test.js",
+    "bench:small": "npm run test:compile && node tests_compiled/perf_small.test.js",
+    "bench:large": "npm run test:compile && node tests_compiled/large_payload.test.js",
+    "test:load-ws": "npm run test:compile && node tests_compiled/concurrent_ws.test.js",
+    "test:load-uploads": "npm run test:compile && node tests_compiled/concurrent_uploads.test.js",
+    "test:soak": "npm run test:compile && node tests_compiled/soak_mixed.test.js"
   },
   "devDependencies": {
     "@types/node": "^24.8.1",
@@ -15,6 +23,12 @@
     "ws": "^8.18.3"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.913.0",
+    "@aws-sdk/lib-storage": "^3.913.0",
+    "@types/busboy": "^1.5.4",
+    "bullmq": "^5.61.0",
+    "busboy": "^1.6.0",
+    "ioredis": "^5.8.1",
     "yaml": "^2.8.1"
   }
 }

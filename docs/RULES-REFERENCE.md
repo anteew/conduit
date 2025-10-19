@@ -4,6 +4,7 @@ Complete reference for `config/rules.yaml` DSL configuration.
 
 ## Table of Contents
 - [Default Rules Overview](#default-rules-overview)
+- [Per-Tenant Overlays](#per-tenant-overlays)
 - [Selectors](#selectors)
 - [Frame Types](#frame-types)
 - [Error Codes](#error-codes)
@@ -32,6 +33,313 @@ Complete reference for `config/rules.yaml` DSL configuration.
 | ws-message-grant | Message with `credit` field | grant | Issue flow control credit |
 | ws-message-ack | Message with `ack` field | ack | Acknowledge message |
 | ws-message-nack | Message with `nack` field | nack | Negative acknowledge |
+
+## Per-Tenant Overlays
+
+**T5062**: Tenant overlays enable per-tenant endpoint customization in multi-tenant deployments without requiring separate Conduit instances.
+
+### How Overlays Work
+
+1. **Tenant identification**: Typically via `x-tenant-id` header (requires T5061 for automatic extraction)
+2. **Rule precedence**: Tenant rules are evaluated FIRST, before base rules
+3. **Fallback behavior**: If no tenant rule matches, base rules apply
+4. **Override vs Extend**: Tenant rules completely override (not merge) matching base rules
+
+### Configuration Structure
+
+```yaml
+version: proto-dsl/v0
+
+# Base rules apply to all tenants
+rules:
+  - id: health
+    when: { http: { path: /health } }
+    ...
+
+# Tenant overlays (optional)
+tenantOverlays:
+  tenant-a:
+    rules:
+      - id: tenant-a-custom-webhook
+        when:
+          http:
+            path: /v1/webhook/incoming
+            headers:
+              x-tenant-id: tenant-a
+        ...
+  
+  tenant-b:
+    rules:
+      - id: tenant-b-priority-enqueue
+        ...
+```
+
+### Precedence Rules
+
+**Order of evaluation:**
+1. Tenant overlay rules (if tenant identified and overlay exists)
+2. Base rules (default for all tenants)
+3. Hardcoded fallbacks (if no DSL rules configured)
+
+**Example:**
+- Request with `x-tenant-id: tenant-a` to `POST /v1/enqueue` → Checks `tenant-a` overlay first
+- If tenant-a overlay has matching rule → Use tenant rule
+- If no match in tenant-a overlay → Fall through to base rules
+- If no match in base rules → Hardcoded endpoint (legacy support)
+
+### Common Use Cases
+
+#### 1. Tenant-Specific Endpoints
+
+Add custom endpoints only for specific tenants:
+
+```yaml
+tenantOverlays:
+  premium-tenant:
+    rules:
+      - id: premium-analytics
+        when:
+          http:
+            path: /v1/analytics/advanced
+            headers:
+              x-tenant-id: premium-tenant
+        send:
+          frame:
+            type: snapshot
+            fields:
+              view: analytics/premium/$query.metric
+          respond:
+            http:
+              status: 200
+              body: $result
+```
+
+#### 2. Tenant-Specific Auth Requirements
+
+Enforce stricter authentication for specific tenants:
+
+```yaml
+tenantOverlays:
+  secure-tenant:
+    rules:
+      - id: secure-tenant-enqueue
+        when:
+          http:
+            method: POST
+            path: /v1/enqueue
+            headers:
+              x-tenant-id: secure-tenant
+              authorization: "Bearer *"
+              x-api-key: "*"
+        send:
+          frame:
+            type: enqueue
+            fields:
+              to: agents/secure-tenant/$body.to
+              envelope: $body.envelope
+          respond:
+            http:
+              status: 200
+              body: $result
+        onError:
+          Unauthorized:
+            http:
+              status: 401
+              body:
+                error: MultiFactorRequired
+                message: This tenant requires both Bearer token and API key
+```
+
+#### 3. Custom Error Handling
+
+Provide tenant-specific error formats:
+
+```yaml
+tenantOverlays:
+  enterprise-tenant:
+    rules:
+      - id: enterprise-snapshot
+        when:
+          http:
+            path: /v1/snapshot
+            headers:
+              x-tenant-id: enterprise-tenant
+        send:
+          frame:
+            type: snapshot
+            fields:
+              view: $query.view
+          respond:
+            http:
+              status: 200
+              body:
+                status: success
+                tenant: enterprise-tenant
+                data: $result
+        onError:
+          UnknownView:
+            http:
+              status: 404
+              body:
+                status: error
+                errorCode: ENTERPRISE_VIEW_NOT_FOUND
+                errorMessage: View not found in enterprise catalog
+                tenant: enterprise-tenant
+                supportContact: support@enterprise.com
+```
+
+#### 4. Tenant-Specific Stream Routing
+
+Route tenant traffic to isolated stream namespaces:
+
+```yaml
+tenantOverlays:
+  isolated-tenant:
+    rules:
+      - id: isolated-subscribe
+        when:
+          ws:
+            path: /v1/subscribe
+            headers:
+              x-tenant-id: isolated-tenant
+        send:
+          frame:
+            type: subscribe
+            fields:
+              stream: isolated/tenant-namespace/$query.stream
+          respond:
+            ws:
+              message:
+                subscribed: true
+                tenant: isolated-tenant
+                isolation: namespace
+```
+
+### Best Practices
+
+#### When to Use Overlays
+
+**✅ Use overlays when:**
+- You need tenant-specific endpoints (webhooks, custom APIs)
+- You want different auth requirements per tenant
+- You need custom error formats or response structures
+- Tenants share the same infrastructure but need custom behavior
+- You want to A/B test new features with specific tenants
+
+**❌ Don't use overlays when:**
+- Tenants require complete data isolation (use separate instances)
+- Tenants need different performance SLAs (use separate instances)
+- Compliance requires physical separation (use separate instances)
+- Overhead of tenant routing impacts all tenants
+
+#### Security Considerations
+
+**1. Always validate tenant identity:**
+```yaml
+# BAD: No tenant validation
+when:
+  http:
+    path: /v1/webhook/incoming
+
+# GOOD: Explicit tenant header requirement
+when:
+  http:
+    path: /v1/webhook/incoming
+    headers:
+      x-tenant-id: specific-tenant
+```
+
+**2. Namespace tenant data:**
+```yaml
+# GOOD: Tenant prefix on stream names
+fields:
+  to: agents/$headers.x-tenant-id/$body.stream
+```
+
+**3. Avoid tenant information in URLs:**
+```yaml
+# BAD: Tenant in path (can be spoofed)
+path: /v1/tenants/tenant-a/data
+
+# GOOD: Tenant in validated header
+headers:
+  x-tenant-id: tenant-a
+```
+
+**4. Audit tenant-specific rules:**
+- Log all tenant rule matches
+- Monitor for unauthorized cross-tenant access
+- Regularly review tenant overlay configurations
+
+#### Performance Implications
+
+**Rule evaluation overhead:**
+- Each request checks tenant overlays first (minimal overhead: ~0.1ms)
+- Tenant overlays increase rule count (use specific matchers to optimize)
+- Path wildcards in overlays can slow matching (prefer exact paths)
+
+**Memory overhead:**
+- Each tenant overlay adds to rule set in memory
+- 100 tenants × 10 rules = 1000 additional rules (~50KB)
+- Negligible for typical deployments (<1000 tenants)
+
+**Optimization tips:**
+1. Use specific path matchers (not wildcards) in overlays
+2. Limit overlay rules to truly custom behavior
+3. Share common logic in base rules
+4. Monitor rule evaluation time in metrics
+
+#### Testing Overlays
+
+**Unit test each tenant overlay:**
+```bash
+# Test tenant-specific endpoint
+curl -H "x-tenant-id: tenant-a" \
+     -H "Authorization: Bearer token" \
+     -X POST http://localhost:9087/v1/enqueue \
+     -d '{"to":"test","envelope":{}}'
+
+# Verify fallback to base rules
+curl -H "x-tenant-id: unknown-tenant" \
+     -X POST http://localhost:9087/v1/enqueue \
+     -d '{"to":"test","envelope":{}}'
+
+# Verify no tenant header uses base rules
+curl -X POST http://localhost:9087/v1/enqueue \
+     -d '{"to":"test","envelope":{}}'
+```
+
+**Integration test tenant isolation:**
+```typescript
+// Verify tenant A cannot access tenant B resources
+const tenantAResponse = await fetch('/v1/snapshot?view=data', {
+  headers: { 'x-tenant-id': 'tenant-a' }
+});
+const tenantBResponse = await fetch('/v1/snapshot?view=data', {
+  headers: { 'x-tenant-id': 'tenant-b' }
+});
+// Responses should differ or isolate data
+```
+
+### Deployment Considerations
+
+**1. Configuration size:**
+- Large overlay sets should be validated on startup
+- Consider splitting overlays into separate files (future enhancement)
+
+**2. Hot reload:**
+- Overlay changes require service restart (no hot reload in v0)
+- Plan maintenance windows for overlay updates
+
+**3. Monitoring:**
+- Track rule match rates per tenant
+- Alert on tenants with no matching rules (misconfigurations)
+- Monitor overlay evaluation latency
+
+**4. Documentation:**
+- Document each tenant's custom endpoints
+- Maintain changelog of tenant overlay updates
+- Share overlay examples with tenant integration teams
 
 ## Selectors
 

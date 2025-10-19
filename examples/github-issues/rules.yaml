@@ -1,0 +1,120 @@
+version: "proto-dsl/v0"
+
+bind:
+  http:
+    port: 9087
+    host: 127.0.0.1
+
+rules:
+  # Create issue with attachment
+  - id: create-issue-with-attachment
+    when:
+      http:
+        method: POST
+        path: /issues
+        contentType: multipart/form-data
+    send:
+      # First: Store attachment to blob backend
+      blob:
+        backend: auto  # Uses CONDUIT_BLOB_BACKEND env var
+        metadata:
+          filename: $file.filename
+          mime: $file.mime
+          uploadedBy: $headers.x-user-id
+      # Then: Queue work to BullMQ
+      queue:
+        backend: bullmq
+        queue: $body.assignedTo
+        message:
+          issueId: $generated.issueId
+          title: $body.title
+          description: $body.description
+          blobRef: $blobRef
+        options:
+          jobId: $body.idempotencyKey
+          priority: $body.priority
+      # Finally: Enqueue envelope to assigned agent
+      frame:
+        type: enqueue
+        fields:
+          to: $body.assignedTo
+          env:
+            type: issue.created
+            id: $generated.issueId
+            ts: $timestamp
+            payload:
+              issueId: $generated.issueId
+              title: $body.title
+              description: $body.description
+              queueRef: $queueRef
+              attachments:
+                - blobRef: $blobRef
+                  filename: $file.filename
+      respond:
+        http:
+          status: 201
+          body:
+            issueId: $generated.issueId
+            queueRef: $queueRef
+            attachments:
+              - blobRef: $blobRef
+
+  # Simple JSON issue (no attachment)
+  - id: create-issue-json
+    when:
+      http:
+        method: POST
+        path: /issues
+        contentType: application/json
+    send:
+      queue:
+        backend: bullmq
+        queue: $body.assignedTo
+        message: $body
+        options:
+          jobId: $body.idempotencyKey
+      frame:
+        type: enqueue
+        fields:
+          to: $body.assignedTo
+          env:
+            type: issue.created
+            payload:
+              queueRef: $queueRef
+              issue: $body
+      respond:
+        http:
+          status: 201
+          body:
+            issueId: $queueRef.jobId
+            queueRef: $queueRef
+
+  # Get issue status
+  - id: get-issue-status
+    when:
+      http:
+        method: GET
+        path: /issues/:issueId/status
+    send:
+      queueStatus:
+        backend: bullmq
+        jobId: $params.issueId
+        queue: agents/IssueTracker/inbox
+      respond:
+        http:
+          status: 200
+          body: $queueStatus
+
+  # Health check
+  - id: health
+    when:
+      http:
+        path: /health
+    send:
+      http:
+        status: 200
+        body:
+          ok: true
+          backends:
+            blob: $env.CONDUIT_BLOB_BACKEND
+            queue: $env.CONDUIT_QUEUE_BACKEND

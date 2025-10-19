@@ -1,0 +1,10 @@
+POST: using file /tmp/large_1gb.bin (1024.0MB)
+POST: done in 0.026s
+file:///srv/repos0/conduit/tests_compiled/large_payload.test.js:65
+                throw new Error(`Sink size mismatch: got ${final}, expected ${expected}`);
+                      ^
+
+Error: Sink size mismatch: got 655360, expected 1073741824
+    at file:///srv/repos0/conduit/tests_compiled/large_payload.test.js:65:23
+
+Node.js v24.9.0

@@ -1,0 +1,1481 @@
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+[HTTP] draining octet-stream: 10.0 MB
+[HTTP] draining octet-stream: 20.0 MB
+[HTTP] draining octet-stream: 30.0 MB
+[HTTP] draining octet-stream: 40.0 MB
+[HTTP] draining octet-stream: 50.0 MB
+[HTTP] draining octet-stream: 60.0 MB
+[HTTP] draining octet-stream: 70.0 MB
+[HTTP] draining octet-stream: 80.0 MB
+[HTTP] draining octet-stream: 90.0 MB
+[HTTP] draining octet-stream: 100.0 MB
+[HTTP] draining octet-stream: 110.0 MB
+[HTTP] draining octet-stream: 120.0 MB
+[HTTP] draining octet-stream: 130.0 MB
+[HTTP] draining octet-stream: 140.0 MB
+[HTTP] draining octet-stream: 150.0 MB
+[HTTP] draining octet-stream: 160.0 MB
+[HTTP] draining octet-stream: 170.0 MB
+[HTTP] draining octet-stream: 180.0 MB
+[HTTP] draining octet-stream: 190.0 MB
+[HTTP] draining octet-stream: 200.0 MB
+[HTTP] draining octet-stream: 210.0 MB
+[HTTP] draining octet-stream: 220.0 MB
+[HTTP] draining octet-stream: 230.0 MB
+[HTTP] draining octet-stream: 240.0 MB
+[HTTP] draining octet-stream: 250.0 MB
+[HTTP] draining octet-stream: 260.0 MB
+[HTTP] draining octet-stream: 270.0 MB
+[HTTP] draining octet-stream: 280.0 MB
+[HTTP] draining octet-stream: 290.0 MB
+[HTTP] draining octet-stream: 300.0 MB
+[HTTP] draining octet-stream: 310.0 MB
+[HTTP] draining octet-stream: 320.0 MB
+[HTTP] draining octet-stream: 330.0 MB
+[HTTP] draining octet-stream: 340.0 MB
+[HTTP] draining octet-stream: 350.0 MB
+[HTTP] draining octet-stream: 360.0 MB
+[HTTP] draining octet-stream: 370.0 MB
+[HTTP] draining octet-stream: 380.0 MB
+[HTTP] draining octet-stream: 390.0 MB
+[HTTP] draining octet-stream: 400.0 MB
+[HTTP] draining octet-stream: 410.0 MB
+[HTTP] draining octet-stream: 420.0 MB
+[HTTP] draining octet-stream: 430.0 MB
+[HTTP] draining octet-stream: 440.0 MB
+[HTTP] draining octet-stream: 450.0 MB
+[HTTP] draining octet-stream: 460.0 MB
+[HTTP] draining octet-stream: 470.0 MB
+[HTTP] draining octet-stream: 480.0 MB
+[HTTP] draining octet-stream: 490.0 MB
+[HTTP] draining octet-stream: 500.0 MB
+[HTTP] draining octet-stream: 510.0 MB
+[HTTP] draining octet-stream: 520.0 MB
+[HTTP] draining octet-stream: 530.0 MB
+[HTTP] draining octet-stream: 540.0 MB
+[HTTP] draining octet-stream: 550.0 MB
+[HTTP] draining octet-stream: 560.0 MB
+[HTTP] draining octet-stream: 570.0 MB
+[HTTP] draining octet-stream: 580.0 MB
+[HTTP] draining octet-stream: 590.0 MB
+[HTTP] draining octet-stream: 600.0 MB
+[HTTP] draining octet-stream: 610.0 MB
+[HTTP] draining octet-stream: 620.0 MB
+[HTTP] draining octet-stream: 630.0 MB
+[HTTP] draining octet-stream: 640.0 MB
+[HTTP] draining octet-stream: 650.0 MB
+[HTTP] draining octet-stream: 660.0 MB
+[HTTP] draining octet-stream: 670.0 MB
+[HTTP] draining octet-stream: 680.0 MB
+[HTTP] draining octet-stream: 690.0 MB
+[HTTP] draining octet-stream: 700.0 MB
+[HTTP] draining octet-stream: 710.0 MB
+[HTTP] draining octet-stream: 720.0 MB
+[HTTP] draining octet-stream: 730.0 MB
+[HTTP] draining octet-stream: 740.0 MB
+[HTTP] draining octet-stream: 750.0 MB
+[HTTP] draining octet-stream: 760.0 MB
+[HTTP] draining octet-stream: 770.0 MB
+[HTTP] draining octet-stream: 780.0 MB
+[HTTP] draining octet-stream: 790.0 MB
+[HTTP] draining octet-stream: 800.0 MB
+[HTTP] draining octet-stream: 810.0 MB
+[HTTP] draining octet-stream: 820.0 MB
+[HTTP] draining octet-stream: 830.0 MB
+[HTTP] draining octet-stream: 840.0 MB
+[HTTP] draining octet-stream: 850.0 MB
+[HTTP] draining octet-stream: 860.0 MB
+[HTTP] draining octet-stream: 870.0 MB
+[HTTP] draining octet-stream: 880.0 MB
+[HTTP] draining octet-stream: 890.0 MB
+[HTTP] draining octet-stream: 900.0 MB
+[HTTP] draining octet-stream: 910.0 MB
+[HTTP] draining octet-stream: 920.0 MB
+[HTTP] draining octet-stream: 930.0 MB
+[HTTP] draining octet-stream: 940.0 MB
+[HTTP] draining octet-stream: 950.0 MB
+[HTTP] draining octet-stream: 960.0 MB
+[HTTP] draining octet-stream: 970.0 MB
+[HTTP] draining octet-stream: 980.0 MB
+[HTTP] draining octet-stream: 990.0 MB
+[HTTP] draining octet-stream: 1000.0 MB
+[HTTP] draining octet-stream: 1010.0 MB
+[HTTP] draining octet-stream: 1020.0 MB
+[HTTP] upload complete: 1024.0 MB written to /tmp/upload_sink.bin
+[HTTP] octet-stream drained: 1024.0 MB in 4.535s (225.8 MB/s)
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Rate limiting enabled: 1000 msgs/60000ms per connection
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+[WS] Connection ws-1-1760885205245 established
+[WS] Connection ws-2-1760885205302 established
+[WS] Connection ws-3-1760885205303 established
+[WS] Connection ws-4-1760885205305 established
+[WS] Connection ws-5-1760885205306 established
+[WS] Connection ws-6-1760885205307 established
+[WS] Connection ws-7-1760885205308 established
+[WS] Connection ws-8-1760885205310 established
+[WS] Connection ws-9-1760885205311 established
+[WS] Connection ws-10-1760885205313 established
+[WS] Connection ws-11-1760885205314 established
+[WS] Connection ws-12-1760885205354 established
+[WS] Connection ws-13-1760885205355 established
+[WS] Connection ws-14-1760885205355 established
+[WS] Connection ws-15-1760885205356 established
+[WS] Connection ws-16-1760885205357 established
+[WS] Connection ws-17-1760885205358 established
+[WS] Connection ws-18-1760885205359 established
+[WS] Connection ws-19-1760885205359 established
+[WS] Connection ws-20-1760885205360 established
+[WS] Connection ws-21-1760885205361 established
+[WS] Connection ws-22-1760885205409 established
+[WS] Connection ws-23-1760885205410 established
+[WS] Connection ws-24-1760885205411 established
+[WS] Connection ws-25-1760885205412 established
+[WS] Connection ws-26-1760885205412 established
+[WS] Connection ws-27-1760885205413 established
+[WS] Connection ws-28-1760885205414 established
+[WS] Connection ws-29-1760885205415 established
+[WS] Connection ws-30-1760885205415 established
+[WS] Connection ws-31-1760885205416 established
+[WS] Connection ws-32-1760885205467 established
+[WS] Connection ws-33-1760885205468 established
+[WS] Connection ws-34-1760885205468 established
+[WS] Connection ws-35-1760885205469 established
+[WS] Connection ws-36-1760885205470 established
+[WS] Connection ws-37-1760885205471 established
+[WS] Connection ws-38-1760885205471 established
+[WS] Connection ws-39-1760885205472 established
+[WS] Connection ws-40-1760885205473 established
+[WS] Connection ws-41-1760885205474 established
+[WS] Connection ws-42-1760885205517 established
+[WS] Connection ws-43-1760885205518 established
+[WS] Connection ws-44-1760885205519 established
+[WS] Connection ws-45-1760885205520 established
+[WS] Connection ws-46-1760885205521 established
+[WS] Connection ws-47-1760885205522 established
+[WS] Connection ws-48-1760885205523 established
+[WS] Connection ws-49-1760885205524 established
+[WS] Connection ws-50-1760885205525 established
+[WS] Connection ws-51-1760885205525 established
+[WS] Connection ws-52-1760885205566 established
+[WS] Connection ws-53-1760885205567 established
+[WS] Connection ws-54-1760885205568 established
+[WS] Connection ws-55-1760885205568 established
+[WS] Connection ws-56-1760885205569 established
+[WS] Connection ws-57-1760885205570 established
+[WS] Connection ws-58-1760885205571 established
+[WS] Connection ws-59-1760885205572 established
+[WS] Connection ws-60-1760885205572 established
+[WS] Connection ws-61-1760885205573 established
+[WS] Connection ws-62-1760885205619 established
+[WS] Connection ws-63-1760885205620 established
+[WS] Connection ws-64-1760885205620 established
+[WS] Connection ws-65-1760885205621 established
+[WS] Connection ws-66-1760885205622 established
+[WS] Connection ws-67-1760885205623 established
+[WS] Connection ws-68-1760885205623 established
+[WS] Connection ws-69-1760885205624 established
+[WS] Connection ws-70-1760885205625 established
+[WS] Connection ws-71-1760885205626 established
+[WS] Connection ws-72-1760885205671 established
+[WS] Connection ws-73-1760885205672 established
+[WS] Connection ws-74-1760885205673 established
+[WS] Connection ws-75-1760885205674 established
+[WS] Connection ws-76-1760885205674 established
+[WS] Connection ws-77-1760885205675 established
+[WS] Connection ws-78-1760885205676 established
+[WS] Connection ws-79-1760885205676 established
+[WS] Connection ws-80-1760885205677 established
+[WS] Connection ws-81-1760885205678 established
+[WS] Connection ws-82-1760885205724 established
+[WS] Connection ws-83-1760885205725 established
+[WS] Connection ws-84-1760885205726 established
+[WS] Connection ws-85-1760885205727 established
+[WS] Connection ws-86-1760885205727 established
+[WS] Connection ws-87-1760885205728 established
+[WS] Connection ws-88-1760885205729 established
+[WS] Connection ws-89-1760885205730 established
+[WS] Connection ws-90-1760885205730 established
+[WS] Connection ws-91-1760885205731 established
+[WS] Connection ws-92-1760885205776 established
+[WS] Connection ws-93-1760885205777 established
+[WS] Connection ws-94-1760885205778 established
+[WS] Connection ws-95-1760885205779 established
+[WS] Connection ws-96-1760885205779 established
+[WS] Connection ws-97-1760885205780 established
+[WS] Connection ws-98-1760885205781 established
+[WS] Connection ws-99-1760885205781 established
+[WS] Connection ws-100-1760885205782 established
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Rate limiting enabled: 1000 msgs/60000ms per connection
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+[WS] Connection ws-1-1760885209395 established
+[WS] Connection ws-2-1760885209398 established
+[WS] Connection ws-3-1760885209399 established
+[WS] Connection ws-4-1760885209400 established
+[WS] Connection ws-5-1760885209400 established
+[WS] Connection ws-6-1760885209401 established
+[WS] Connection ws-7-1760885209402 established
+[WS] Connection ws-8-1760885209403 established
+[WS] Connection ws-9-1760885209403 established
+[WS] Connection ws-10-1760885209406 established
+[WS] Connection ws-11-1760885209407 established
+[WS] Connection ws-12-1760885209407 established
+[WS] Connection ws-13-1760885209408 established
+[WS] Connection ws-14-1760885209409 established
+[WS] Connection ws-15-1760885209409 established
+[WS] Connection ws-16-1760885209410 established
+[WS] Connection ws-17-1760885209410 established
+[WS] Connection ws-18-1760885209411 established
+[WS] Connection ws-19-1760885209412 established
+[WS] Connection ws-20-1760885209412 established
+[WS] Connection ws-21-1760885209413 established
+[WS] Connection ws-22-1760885209413 established
+[WS] Connection ws-23-1760885209432 established
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885209433_11bg9gdu79zd.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.002s (6.3 MB/s)
+[WS] Connection ws-24-1760885209444 established
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885209445_mv82s6ljvy8.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (116.1 MB/s)
+[WS] Connection ws-25-1760885209449 established
+[WS] Connection ws-26-1760885209452 established
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209450_g8xwskmqc2f.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.004s (21.1 MB/s)
+[WS] Connection ws-27-1760885209454 established
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209453_0dfh72el94x.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (29.7 MB/s)
+[WS] Connection ws-28-1760885209458 established
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885209458_uoknyksefpk.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (180.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209455_0qenagb9ldin.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.004s (24.7 MB/s)
+[WS] Connection ws-29-1760885209461 established
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885209461_vjxmod5adr.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (58.0 MB/s)
+[WS] Connection ws-30-1760885209463 established
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209463_7jl5edvnc45.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (44.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209465_orhhl882q99.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (39.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885209466_0jljr3lq3jli.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (41.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885210001_f6e7g6gr1ek.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (97.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885210125_su39qht6ao.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (96.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885210318_c8nf3m4gg5.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (111.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885210521_17t2jrudlnj.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (52.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885210633_ww9rtq0l44.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (114.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885210669_x3cvndkjdec.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (60.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885210758_ujjclhbmmj.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (125.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885210852_xyjuzo9bivl.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (64.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885210912_wcn2ckzbl9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (31.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885211267_0sktdz9smxbf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.012s (5.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885211411_3i9w6bx889l.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.001s (32.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885211429_fjjlsjcivg.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (161.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885211518_o7sri50imj.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (60.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885211596_cu31rgbppa.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (131.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885211606_bf1bycu1iba.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (49.0 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885211634_gt907juv6ge.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (148.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885211714_orqezndih5.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.004s (19.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885212104_poyjbsqla5b.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (136.3 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885212117_iwg74td7g28.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (327.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885212428_2tx67knpywf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (168.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885212501_xryphi45dg.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (160.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885212590_52aim0pckou.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (61.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885212653_8q5265v1ubh.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (135.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885212766_88qsdunea6d.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (130.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885212997_yicfk6ebjjs.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (36.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885213082_kzbp5fiw3j.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (140.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885213214_ojykgyuofwp.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (159.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885213273_wlv71nzgk9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (251.6 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885213348_30vb7ksm47a.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (171.0 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885213526_7gmx89ns2em.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (40.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885213749_e9d2teclbz.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (288.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885213747_a5ywfh4ko3n.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (30.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885214008_oardd326enq.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (124.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885214096_05ysoevtu9wp.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (174.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885214383_dd1j55q3je.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (217.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885214394_3wjow9eqpj7.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (163.6 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885214455_6f0wz8ijhb8.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (295.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885214609_9cu41yynf6h.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (36.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885214823_l2i5bmotbzp.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (165.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885215007_mmujdoz76n.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (37.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885215012_fddv61kb63p.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (111.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885215036_enh1co64k9.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (143.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885215235_fdgv3o3guz5.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (169.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885215378_bzqv5paer1n.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (85.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885215440_29j60cbaewf.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (65.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885215444_tx8gc6osw7f.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (57.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885215460_2kwdczv4xyo.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (107.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885215717_xuc8ivmjmom.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (132.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216153_sjveawagr7.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (76.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216218_qtewodm5ej.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (149.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216387_nh0mr1m5ig.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (32.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216412_8ycem0h8s2y.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (29.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216536_bn4ztqjra0t.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (68.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216573_bg7cdku8vgq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (64.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885216700_o5rix1gwwi.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (72.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885216916_32quuhz6kta.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (112.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885217039_xzx2wdp3z8k.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (119.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885217172_9seog880bw.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (113.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885217294_mmh7yn7swk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (265.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885217490_4cm9qamhfg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (73.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885217629_6dl6plnaq2h.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (277.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885217682_iizuwktkrcs.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (123.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885217833_s2cpqs91w6h.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (66.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885217941_26f6oufltxz.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (132.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885218299_msa2wriv8b9.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (44.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885218564_ikcbd7p0x3.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (73.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885218641_p6qhpumy95.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (118.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885218764_m3bagr3bfaa.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (171.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885218780_go3fg1amoyf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (99.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885218815_7nsp43mfqei.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (63.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885218816_n1v1t73karg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (149.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885218851_yxg6xp0w4t.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (85.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885218886_azqnojwr8vm.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (80.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885219294_njenaije4hi.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (57.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885219332_rxg5xi8xg1n.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (68.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885219374_inxgyhg4cs.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (58.3 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885219460_eu7g3kvmlj.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (166.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885219880_5q3stot1zpv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (43.3 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885220084_3z7s7s8t9kh.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (258.3 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885220106_fuk7uxvattu.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (256.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220159_vd5s2ecem4p.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (50.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220202_9x8zdtlfdfv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (66.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220361_9x3kcthkk8e.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (105.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220369_ysqgy9vi1v.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (69.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220540_qelkixezzb.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.026s (3.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220564_fxkknjstpwg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (52.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885220596_x4fats6pm4p.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (36.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885221008_jifzzu6efq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (80.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885221233_x61499jk59h.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (240.5 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885221249_hp7mbf53cls.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (334.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885221248_z1drbex967.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (34.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885221264_u5r3xuy82c7.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (200.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885221289_lww4dtru8df.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (33.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885221466_l2qm8n1ibbp.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (241.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885221852_woi0i58xqf8.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (97.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885221910_gwyiqjd8qsq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (81.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885221924_6ln2bcji57h.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (249.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885222097_ofevuya0tdh.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (201.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222109_qk9nnjt2fo.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (95.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222271_k3alzgpcgcn.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (48.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222628_kvs20z4sjd.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (75.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222723_pe2h20xlrg.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (162.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885222811_jh80bvmx0cf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (109.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222814_10q2xc2kbvbr.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (184.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885222928_uuavfe7x4cs.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (101.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885222997_uxykwomdzq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (67.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885223134_soo71nn5vql.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (168.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885223333_zcqfryrh5wm.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (78.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885223356_s9d5i7o4u9a.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (150.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885223449_voocbn4q4vh.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (195.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885223565_xnhzu7k5a9h.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (114.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885223683_n14xb3zy12r.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (67.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885223872_n7o6ph9ggz.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (119.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885224384_np2cop3g44l.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (53.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885224428_vgblb7n881.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (76.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885224514_dztyvrkrhc.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (84.7 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885224647_fr9ejhjnptn.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (250.5 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885224776_wgs719pintf.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (177.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885224804_92bh6q8qoeg.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (41.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885224880_u2rwvrz8aj.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (68.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885225162_gq68e31fxj.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (50.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885225312_28kgaxt9i2dh.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (137.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885225486_2nd1oewbojk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (111.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885225543_ahtrqyil6ct.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (187.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885226066_d77c81k0ll.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (151.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885226083_zpqzst5x4jh.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (90.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885226124_zvpg75tpv29.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (238.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885226236_758lnfop7qy.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (100.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885226282_wutwlsvwmf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (84.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885226362_dc57qujfga.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (218.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885226387_pk99d98j0o.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (129.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885226619_dc0klexjrlr.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (90.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885226622_46so7sdl3vn.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (94.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885226737_d8o5sbcg5fh.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (141.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885227371_gtnscoo8eti.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (135.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885227373_gptpza8eq1.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (143.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885227396_o5u3738qxc.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (248.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885227424_jn2qf55mg9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (69.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885227443_skjynfxjzs.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (262.5 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885227488_h9vinpmnpbm.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (223.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885227698_xy6xd3hy5e.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (66.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885227763_zgn575d8iis.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (210.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885227912_b264gwl9tii.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (46.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885228059_7tjl1m4x5lx.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (147.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885228195_48erv2nm2qb.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (238.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885228229_f0opsf5zqke.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (39.3 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885228351_9e949yjvl8u.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (257.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885228525_0hypoy0xrkq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (141.4 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885228619_e59pudm5hak.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (220.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885228852_0udhh5sfmiu.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.001s (69.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885228949_jhl7x14xk0j.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (66.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229041_c8k1qrpz5dp.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (99.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229422_2qtq0mc8um7.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (62.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229525_7ptpztgehqv.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (224.9 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885229603_29ykg11f5qu.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (260.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229642_yd63dbkziyk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (192.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885229669_dxpnh193xx9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (138.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229671_bslum3bep6s.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (107.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885229685_vw3dkcrugk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (128.6 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885229838_s6wpm5win7.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (109.5 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885230050_x0ex37jct.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (72.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885230080_b349abvozfe.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (110.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885230311_ghitqdt2v6n.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (125.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885230480_hjx1jq3zkad.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (152.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885230604_4nnmp7cl1ro.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (155.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885230988_6suolcr34ij.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (114.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885231112_xudu4g1xaoq.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (155.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885231261_4pskro34pbd.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (121.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885231373_r5losvclu6.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (124.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885231480_l5yxvwmw1rn.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (79.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885231486_k95ve723vi.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (248.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885231495_9wd8d2v15ca.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (246.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885231549_uvpl12tp7im.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (108.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885231835_owdri3dhhz.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (77.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885231933_em817esewp.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (204.3 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885231946_mnkq8saep6.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (319.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885232288_7ueozq71k47.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (50.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885232320_w734rcecycn.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (141.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885232719_alak2dvuvr8.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (99.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885232783_k4pbjm5eoob.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (204.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885232939_1hu4nmw4y3u.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (64.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885232983_f20893845cg.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (92.1 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885232990_twv5tessdjt.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (296.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885233018_e5tyqssqyx6.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (210.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885233519_lzg0iflem2r.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (110.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885233548_tx64kbwqgn.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (164.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885233821_kdex0rzdgm.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (190.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885233831_go7t6z1ry66.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (157.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885233874_se3fgnz4ml.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (202.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885234270_4xsutihl018.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (230.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885234284_dn7dimnk8no.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (243.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885234375_9qfw97p8cnn.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (97.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885234517_sfhknbf3s8.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (49.9 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885234584_60163yyxwqd.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (250.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885234618_adansfjkils.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (159.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885234693_a1a2irgpy7.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (184.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885234984_xbtb6hx2dwg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (85.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885235187_tzaxqy6ir3.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (122.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885235253_z5azvu5z2tm.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (60.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885235376_0xcxe7wi1nn9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (127.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885235488_4317wf1qsx2.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (211.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885235688_hc364fa6qvq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (77.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885235805_dwh2yly7lcf.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (72.1 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885235883_pqrht9yztmk.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (335.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885235905_u2ese289mp.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (114.5 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885236276_33b9lopj1rn.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (272.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885236308_kqevx2vcbno.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (133.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885236490_0lliveo3uot.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (85.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885236687_5tirm1314li.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (241.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885236942_4n1usm1xj0m.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (133.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885237055_0o7dzpi5v04o.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (163.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885237179_utztidysw5.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (48.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885237193_tgo00mrt9ih.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (44.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885237474_flu84v8n548.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (186.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885237665_itpa28ub82.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (120.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885237763_l6r8uag1vfe.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (52.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885237877_v5ooymifw59.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (161.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885237981_ugpq0i81ee.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (121.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885238048_s5uzckrria.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (59.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885238313_3f90rkdgmf1.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (77.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885238558_p8amcwesmu.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (139.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885238624_on9y5s187sa.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (203.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885238931_3ranyz3x1tj.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (202.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885238932_nof7msv9n2h.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (157.9 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885239103_lf7eq5rqqmj.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (252.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885239228_qmbx4ox8zb8.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (155.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885239244_x0wotmjthxe.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (122.3 MB/s)
+[WS] Connection ws-1-1760885209395 closed
+[WS] Connection ws-2-1760885209398 closed
+[WS] Connection ws-3-1760885209399 closed
+[WS] Connection ws-4-1760885209400 closed
+[WS] Connection ws-5-1760885209400 closed
+[WS] Connection ws-6-1760885209401 closed
+[WS] Connection ws-7-1760885209402 closed
+[WS] Connection ws-9-1760885209403 closed
+[WS] Connection ws-8-1760885209403 closed
+[WS] Connection ws-10-1760885209406 closed
+[WS] Connection ws-11-1760885209407 closed
+[WS] Connection ws-12-1760885209407 closed
+[WS] Connection ws-14-1760885209409 closed
+[WS] Connection ws-13-1760885209408 closed
+[WS] Connection ws-15-1760885209409 closed
+[WS] Connection ws-16-1760885209410 closed
+[WS] Connection ws-17-1760885209410 closed
+[WS] Connection ws-18-1760885209411 closed
+[WS] Connection ws-19-1760885209412 closed
+[WS] Connection ws-21-1760885209413 closed
+[WS] Connection ws-20-1760885209412 closed
+[WS] Connection ws-22-1760885209413 closed
+[WS] Connection ws-23-1760885209432 closed
+[WS] Connection ws-24-1760885209444 closed
+[WS] Connection ws-25-1760885209449 closed
+[WS] Connection ws-26-1760885209452 closed
+[WS] Connection ws-27-1760885209454 closed
+[WS] Connection ws-28-1760885209458 closed
+[WS] Connection ws-29-1760885209461 closed
+[WS] Connection ws-30-1760885209463 closed
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Rate limiting enabled: 1000 msgs/60000ms per connection
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Rate limiting enabled: 1000 msgs/60000ms per connection
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (163.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (320.1 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (384.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (376.0 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (146.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (385.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (178.5 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (483.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (469.9 MB/s)
+[WS] Connection ws-1-1760885285976 established
+[WS] Connection ws-2-1760885286029 established
+[WS] Connection ws-3-1760885286030 established
+[WS] Connection ws-4-1760885286031 established
+[WS] Connection ws-5-1760885286031 established
+[WS] Connection ws-6-1760885286032 established
+[WS] Connection ws-7-1760885286033 established
+[WS] Connection ws-8-1760885286034 established
+[WS] Connection ws-9-1760885286035 established
+[WS] Connection ws-10-1760885286036 established
+[WS] Connection ws-11-1760885286041 established
+[WS] Connection ws-12-1760885286080 established
+[WS] Connection ws-13-1760885286081 established
+[WS] Connection ws-14-1760885286082 established
+[WS] Connection ws-15-1760885286083 established
+[WS] Connection ws-16-1760885286083 established
+[WS] Connection ws-17-1760885286084 established
+[WS] Connection ws-18-1760885286085 established
+[WS] Connection ws-19-1760885286085 established
+[WS] Connection ws-20-1760885286086 established
+[WS] Connection ws-21-1760885286086 established
+[WS] Connection ws-22-1760885286134 established
+[WS] Connection ws-23-1760885286134 established
+[WS] Connection ws-24-1760885286135 established
+[WS] Connection ws-25-1760885286136 established
+[WS] Connection ws-26-1760885286137 established
+[WS] Connection ws-27-1760885286138 established
+[WS] Connection ws-28-1760885286139 established
+[WS] Connection ws-29-1760885286140 established
+[WS] Connection ws-30-1760885286141 established
+[WS] Connection ws-31-1760885286143 established
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (169.0 MB/s)
+[WS] Connection ws-32-1760885286202 established
+[WS] Connection ws-33-1760885286202 established
+[WS] Connection ws-34-1760885286203 established
+[WS] Connection ws-35-1760885286204 established
+[WS] Connection ws-36-1760885286204 established
+[WS] Connection ws-37-1760885286205 established
+[WS] Connection ws-38-1760885286207 established
+[WS] Connection ws-39-1760885286207 established
+[WS] Connection ws-40-1760885286208 established
+[WS] Connection ws-41-1760885286210 established
+[WS] Connection ws-42-1760885286240 established
+[WS] Connection ws-43-1760885286240 established
+[WS] Connection ws-44-1760885286241 established
+[WS] Connection ws-45-1760885286242 established
+[WS] Connection ws-46-1760885286243 established
+[WS] Connection ws-47-1760885286247 established
+[WS] Connection ws-48-1760885286248 established
+[WS] Connection ws-49-1760885286248 established
+[WS] Connection ws-50-1760885286249 established
+[WS] Connection ws-51-1760885286250 established
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (399.2 MB/s)
+[WS] Connection ws-52-1760885286291 established
+[WS] Connection ws-53-1760885286292 established
+[WS] Connection ws-54-1760885286293 established
+[WS] Connection ws-55-1760885286293 established
+[WS] Connection ws-56-1760885286294 established
+[WS] Connection ws-57-1760885286295 established
+[WS] Connection ws-58-1760885286295 established
+[WS] Connection ws-59-1760885286296 established
+[WS] Connection ws-60-1760885286296 established
+[WS] Connection ws-61-1760885286297 established
+[WS] Connection ws-62-1760885286345 established
+[WS] Connection ws-63-1760885286345 established
+[WS] Connection ws-64-1760885286346 established
+[WS] Connection ws-65-1760885286347 established
+[WS] Connection ws-66-1760885286347 established
+[WS] Connection ws-67-1760885286348 established
+[WS] Connection ws-68-1760885286348 established
+[WS] Connection ws-69-1760885286349 established
+[WS] Connection ws-70-1760885286350 established
+[WS] Connection ws-71-1760885286350 established
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (414.3 MB/s)
+[WS] Connection ws-72-1760885286396 established
+[WS] Connection ws-73-1760885286396 established
+[WS] Connection ws-74-1760885286397 established
+[WS] Connection ws-75-1760885286398 established
+[WS] Connection ws-76-1760885286399 established
+[WS] Connection ws-77-1760885286400 established
+[WS] Connection ws-78-1760885286400 established
+[WS] Connection ws-79-1760885286401 established
+[WS] Connection ws-80-1760885286402 established
+[WS] Connection ws-81-1760885286403 established
+[WS] Connection ws-82-1760885286448 established
+[WS] Connection ws-83-1760885286449 established
+[WS] Connection ws-84-1760885286450 established
+[WS] Connection ws-85-1760885286451 established
+[WS] Connection ws-86-1760885286451 established
+[WS] Connection ws-87-1760885286453 established
+[WS] Connection ws-88-1760885286453 established
+[WS] Connection ws-89-1760885286454 established
+[WS] Connection ws-90-1760885286455 established
+[WS] Connection ws-91-1760885286455 established
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (491.4 MB/s)
+[WS] Connection ws-92-1760885286509 established
+[WS] Connection ws-93-1760885286509 established
+[WS] Connection ws-94-1760885286510 established
+[WS] Connection ws-95-1760885286511 established
+[WS] Connection ws-96-1760885286511 established
+[WS] Connection ws-97-1760885286512 established
+[WS] Connection ws-98-1760885286513 established
+[WS] Connection ws-99-1760885286513 established
+[WS] Connection ws-100-1760885286516 established
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (1071.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (1472.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (208.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (102.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (675.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (543.6 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (371.4 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (127.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (363.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (484.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (569.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (568.9 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (681.0 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (230.2 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (731.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (755.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (770.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (130.5 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (550.9 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (315.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (500.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (554.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (129.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (599.9 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (358.9 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (418.8 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (593.5 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (633.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (812.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (495.9 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (660.5 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (753.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (689.1 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (694.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (238.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (764.1 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (651.8 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (814.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (766.5 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (509.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (682.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (695.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (494.6 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (712.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (302.8 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (769.9 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (139.9 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (589.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (575.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (694.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (552.8 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (362.1 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (621.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (599.6 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (463.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (710.5 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (804.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (298.1 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (321.6 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (447.8 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (407.4 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (696.7 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (127.2 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (732.7 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (467.2 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (805.8 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (440.3 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (698.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (820.7 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (649.9 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (592.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (749.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (641.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (255.0 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (436.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (467.8 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (928.5 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (516.0 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (515.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (632.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (663.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (309.6 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (269.2 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (340.1 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (680.5 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (365.3 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (648.0 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (294.4 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (826.0 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (1181.7 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (228.8 MB/s)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (382.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (521.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (321.3 MB/s)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (167.6 MB/s)
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Loaded DSL rules from config/rules.yaml: 11 rules
+[WS] Rate limiting enabled: 1000 msgs/60000ms per connection
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088
+[WS] Connection ws-1-1760885417613 established
+[WS] Connection ws-2-1760885417616 established
+[WS] Connection ws-3-1760885417617 established
+[WS] Connection ws-4-1760885417618 established
+[WS] Connection ws-5-1760885417619 established
+[WS] Connection ws-6-1760885417620 established
+[WS] Connection ws-7-1760885417621 established
+[WS] Connection ws-8-1760885417622 established
+[WS] Connection ws-9-1760885417623 established
+[WS] Connection ws-10-1760885417624 established
+[WS] Connection ws-11-1760885417625 established
+[WS] Connection ws-12-1760885417626 established
+[WS] Connection ws-13-1760885417626 established
+[WS] Connection ws-14-1760885417627 established
+[WS] Connection ws-15-1760885417627 established
+[WS] Connection ws-16-1760885417628 established
+[WS] Connection ws-17-1760885417629 established
+[WS] Connection ws-18-1760885417629 established
+[WS] Connection ws-19-1760885417630 established
+[WS] Connection ws-20-1760885417631 established
+[WS] Connection ws-21-1760885417631 established
+[WS] Connection ws-22-1760885417632 established
+[WS] Connection ws-23-1760885417651 established
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885417652_m90pmf46qne.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.002s (23.8 MB/s)
+[WS] Connection ws-24-1760885417663 established
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885417663_ikh3nx6wv5.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (40.9 MB/s)
+[WS] Connection ws-25-1760885417668 established
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885417668_3ypdlmbl3bq.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (196.2 MB/s)
+[WS] Connection ws-26-1760885417672 established
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885417672_bcxw49dn43.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (69.7 MB/s)
+[WS] Connection ws-27-1760885417674 established
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885417675_vqsisccglla.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (213.2 MB/s)
+[WS] Connection ws-28-1760885417677 established
+[WS] Connection ws-29-1760885417680 established
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885417678_r93x03fjd8m.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (25.2 MB/s)
+[WS] Connection ws-30-1760885417682 established
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885417680_9kxk9xcihpq.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (35.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885417683_z238bvfsphi.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (30.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885417686_314mxcnp9xf.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (73.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885417685_vjbs7o0vt9k.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (47.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885418768_2a5roblv2yt.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (69.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885418887_3frty1x390y.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (91.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885418928_u7nq8i0cicf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (116.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885419083_wyi0dbk50j.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (48.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885419096_g8w50kvzss.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (179.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885419320_lnds8v4j4v.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (104.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885419326_51kudk7oww.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (111.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885419386_cibl0wvrgf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (142.5 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885419484_rty7q80l53n.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (143.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885419615_mn5xsokobdj.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (166.2 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885420145_0aps57butga.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (110.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885420432_n5518a589uk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (71.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885420528_ih76dc20kzm.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (167.7 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885420550_qxtjqesl4l.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (341.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885420696_0saw7rf1wxw.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (63.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885420849_4x74qgm3iz7.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (76.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885420944_uij15dhuw2b.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (67.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885420992_c6m2o2pxgd.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (126.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885421006_s0ra6qizyaa.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (114.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885421141_srkj71i9ljo.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (65.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885421162_zlrwee8gwi.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (65.3 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885421532_f0tteyefr3b.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (99.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885421662_yxx1mdilj2.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (55.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885421882_zxdunvbde98.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (91.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885421944_hoqd84miedk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (135.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885422067_08n6jcje7i7q.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (102.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885422075_yhx522rvpqk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (100.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885422211_y9imh11eay.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (108.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885422393_uuhi7ae80jc.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (49.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885422618_49olvwo7gls.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (73.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885422734_8n5k0mcdd3m.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (87.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885422971_jcq5cw1j5xo.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (180.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885423004_i5m5g7h520g.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (217.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885423304_m0oo7ffiw9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (69.6 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885423390_6gkregswek.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (66.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885423580_1wi5vrvwe3e.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (63.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885423698_rkb0nrxxll.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (158.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885423847_5ozn0l0g7re.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (135.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885423948_24semekeqxw.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (168.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885424055_jq8ei2mqu88.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (121.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885424065_red41q4zig.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (137.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885424139_59c7uhv81m.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (213.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885424303_jl263av9x2q.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (33.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885424442_mlyztftgiei.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (120.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885424484_3revz59gnzw.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (83.5 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885424666_8eysct3ybd5.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (67.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885424979_8za9kujjko9.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (153.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885425185_xgg05j0lzx.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (109.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885425199_5z0gvugxvkm.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (133.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885425267_u1903w091j9.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (78.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885425360_pnza2cfzbum.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (38.0 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885425405_zirbq138a5.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (248.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885425422_55ck0kmt0xw.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (62.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885425449_485fcvo57xv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (88.2 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885425579_f8lksows1a.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (285.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885425914_pusoaw4owa8.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (101.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885426197_78chc68vbfp.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (117.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885426357_6fhl3skq775.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (94.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885426369_i1681e07rze.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (202.1 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885426422_feo7j3m3e3t.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (240.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885426621_odj0cwjqq6s.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (78.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885426724_mknjr68nrgk.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (51.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885426766_q0g4z3246a.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (49.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885426906_8yvjdz21oyv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (70.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885426910_z4ishizhfmg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (63.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885426991_7z3g96qnqo7.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (169.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885427143_ccjjbgn1af.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (133.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885427255_t5s2f1ifhtr.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (130.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885427431_9u1a2rlsml.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (142.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885427549_i1042olaaen.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (69.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885427569_xne05kuqa4d.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (43.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885427708_dnu251xrrb4.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (186.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885427940_krtzr2wxxej.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (53.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885427941_7yvjoyetn1x.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (59.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885428189_tkrz3y3abzm.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.001s (59.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885428213_j65nargtry.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (39.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885428391_zafrk6zbp8h.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (119.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885428477_0nhy1gmoh8rk.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (23.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885428494_7so4tk1sn5a.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (194.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885428561_cbyrfoikeqv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (123.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885428592_4g0isp7spp2.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (61.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885428753_qf1mk67hm3.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (92.3 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885429141_32pgd1oydq5.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (223.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885429265_7c5d18obwsw.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (38.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885429304_8dnurp7nw2k.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (169.0 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885429338_610ygo8n2ev.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (276.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885429409_4vlrbr5u6f3.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (191.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885429788_kv8s1b70z3a.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (53.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885429833_o5z337qf36.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (74.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885430006_pxged4is85n.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (81.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885430384_hhhd0pc44q9.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (230.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885430477_xaousi78p6.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (119.3 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885430688_odwaamie54j.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (124.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885430690_0s3lbsfh7kz.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (75.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885430725_nzdmfcxn4r.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (73.9 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885430925_6h296axdu26.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (212.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431200_6442hdw0cwu.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (155.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431232_ruguw07t0yi.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (96.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431313_yoynv6ky7m.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (53.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431723_8d2j3bhjs2d.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (147.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431763_kzqocv0b7o.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (194.4 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885431801_1weox6vxm44.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (236.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885431827_0n7cn1ye8x8.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (74.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885431898_s2sk2ehj9y.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (79.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885431934_xync7wcmm2e.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (96.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885432023_98qxvpypa8k.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (223.1 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885432291_qipk4x0wuv.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (125.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885432377_qdo9tk3ep7o.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (44.2 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885432421_b8w6whhbxip.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (217.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885432625_13hbatru2o7c.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (115.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885432771_8mpf258we5a.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (104.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885432774_dh71wj9uoy.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (77.2 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885432800_anyrop22xjn.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (272.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885432834_o8pflqp5xfg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (66.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885432964_kx5xt9h69yr.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (55.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885433116_p6og0zuvf7.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (35.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885433176_l4edfpb4anb.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (121.6 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885433435_ps0ftdqpl9o.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (220.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885433552_eblxmy73gt.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (98.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885433826_0eb8ppobcl1a.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (112.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885433997_levmm4g3eq.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (95.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885434043_ugmxfq83a.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (80.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885434306_0336yqq89o47.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (72.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885434319_9zcfzn02o24.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (125.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885434430_3oo5suhsitx.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (96.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885434487_s7wmhtfq49k.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (221.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885434567_vmxhg1uhr39.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (107.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885434587_kpvtmj4tpd.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (52.9 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885434697_ssvql78f40o.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (71.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885435079_iyl7bv0cln.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (158.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885435236_sq5qyr9kbzn.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (38.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885435375_xdcjdjd11zo.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (65.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885435379_d4g5osyxwt.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (129.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885435530_6vmd205dawy.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (150.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885435722_9d1npftmfeh.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (125.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885435796_ij54db280z.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (123.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885435843_fkztcxlreg.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (71.5 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885435878_u9q6qbhh46.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (229.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885435894_6rlp6sd4mzf.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (75.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885436401_zxar2j1u82d.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (74.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885436403_w9eswf3dz1l.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (253.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885436429_s22507bytq.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (120.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885436515_38m1p4ceqf2.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (54.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885436631_xn1ya5mtz9.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (41.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885436679_2s6wu5v1d19.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (53.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885436780_9zqf6hi49r.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (135.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885437189_7wakufs0m9d.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (53.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885437210_2ulc8vpdn62.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (70.0 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885437261_ttz3uqtq69l.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (60.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437514_dxjffxi3hae.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (66.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437572_j9i6d5vto7i.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (46.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885437591_t2rdwpydp6.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.003s (35.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437638_ifww7rdrooh.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (207.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437639_d0co0ls0zr.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (212.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437674_kzbojcmg6wr.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (53.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885437739_lmzij2axj5.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (162.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885438177_w44yqovsdtq.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (196.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885438292_fylp4eqofi8.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (126.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885438438_26cw9bzyqgf.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (194.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885438515_hctuxo4cqxu.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (50.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885438686_qmoea7lzgjl.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (46.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885438858_0h61g5nkjjd.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (115.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885438859_gc8l03g6x76.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (150.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885438961_wnf0ny6jk7f.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (107.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885439055_4zi5xporxsh.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (138.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885439367_lem9i008w2r.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.001s (37.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885439481_6tf4g2e1fpp.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (116.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885439776_sphmrcpgd.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (93.9 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885439851_v9cszocquo.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (270.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885439959_6mp55rjx7on.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (146.6 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885440239_b5f8iqbipa6.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (118.8 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885440368_l1kcy3fdv3.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (165.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885440382_yzswx06fs4.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (138.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885440417_485vwtun09i.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (211.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885440431_m4g4hj6inin.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (60.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885440575_1apssmkpzen.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (142.4 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885440641_t09zx5exccr.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (39.4 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885440801_dofcbmud87.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (233.4 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885440874_vjunyvo3nu.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (286.5 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885441216_hta9l1jc0i.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (77.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885441344_ej0sb6xmr49.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (161.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885441611_hkqr6e60g0i.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (96.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885441669_cj1moxgj5tc.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (199.9 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885441695_8lrl299j3um.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (103.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885441724_2sirmmmv672.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (125.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885441801_2dcess2f476.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (181.0 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885441915_bth2snlk6hc.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (72.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885441993_087s9i8x0lqs.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (55.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885442023_lixvigvqbrd.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (152.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885442156_sfjdzzyapdo.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (133.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885442293_exy9dtvtyi8.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (49.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885442343_bmzy92cypz.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (125.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885442528_c2p73jv2i2g.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (166.1 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885442620_5x2qhsrpv2j.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (201.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885442856_5u8ndqj5fdv.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (40.7 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885442963_1h5ep5un2fj.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (118.2 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885443092_wkouphu4uyo.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (166.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885443115_k6xsv3uoms.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (176.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885443127_v9wxbnmq758.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (108.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885443379_way5utuicja.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (108.7 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885443560_adbedkikm0t.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (286.3 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885443579_xzxi4l6wxp.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (77.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885443787_p7n3c0xwrqj.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (139.6 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885443821_y4859qz0z0e.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (194.7 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885443904_utv3u9rphto.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (74.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885443943_iv9sujwlyqm.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.002s (47.1 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885444096_hm4xczzmrwm.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (132.0 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885444269_g7rv0wwis08.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (279.6 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885444446_ibmspps9p7i.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (189.7 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885444469_9nedy1oe7ak.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (192.0 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885444488_7vq1ix8k68m.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (52.4 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885444670_ducf9p2c227.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (174.9 MB/s)
+[HTTP] upload complete: 0.0 MB written to uploads/upload_1760885444740_sbcpxkqs32.bin
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (45.5 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885444967_0h8ex7ljroxn.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (154.5 MB/s)
+[HTTP] upload complete: 0.1 MB (stat failed for uploads/upload_1760885445087_wbfg96f683d.bin)
+[HTTP] octet-stream drained: 0.1 MB in 0.000s (249.2 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885445184_stanh7e59md.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (115.3 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885445569_onpsi6xbf6t.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (132.8 MB/s)
+[HTTP] upload complete: 0.1 MB written to uploads/upload_1760885445687_3je842aer0n.bin
+[HTTP] octet-stream drained: 0.1 MB in 0.001s (53.8 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885445707_ayq1kp6589k.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (84.6 MB/s)
+[HTTP] upload complete: 0.0 MB (stat failed for uploads/upload_1760885445843_1wiwu2gwu8y.bin)
+[HTTP] octet-stream drained: 0.0 MB in 0.000s (151.1 MB/s)
+[Blob] Backend: local
+Using demo backend (in-process)
+[HTTP] Loaded DSL rules from config/rules.yaml: 11 rules
+Conduit HTTP on 127.0.0.1:9087
+Conduit WS on   127.0.0.1:9088

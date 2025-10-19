@@ -82,6 +82,59 @@ rules:
   # HTTP ENDPOINTS
   # ========================================
   
+  # HTTP enqueue for large binary uploads (no JSON parse)
+  # Matches before the JSON /v1/enqueue rule via contentType
+  - id: http-enqueue-octet-stream
+    when:
+      http:
+        method: POST
+        path: /v1/enqueue
+        contentType: application/octet-stream
+    send:
+      http:
+        status: 202
+        body:
+          ok: true
+          accepted: true
+
+  # Dedicated upload sink for octet-stream (preferred)
+  - id: http-upload-octet-stream
+    when:
+      http:
+        method: POST
+        path: /v1/upload
+        contentType: application/octet-stream
+    send:
+      http:
+        status: 202
+        body:
+          ok: true
+          accepted: true
+
+  # T5020: Large/binary auto-detection
+  # Requests with binary MIME types or exceeding CONDUIT_LARGE_THRESHOLD (default 5MB)
+  # are automatically rejected with 413 and suggestion to use /v1/upload
+  # Binary MIME allowlist: application/octet-stream, application/pdf, image/*, video/*, etc.
+  # Large threshold can be configured: CONDUIT_LARGE_THRESHOLD=5242880 (5MB default)
+  
+  # T5012: Multipart upload with optional auto-enqueue
+  # Multipart uploads are handled by hardcoded handler in http.ts
+  # This rule documents the behavior and can be extended for DSL-based processing
+  # Enable auto-enqueue with: CONDUIT_UPLOAD_AUTO_ENQUEUE=true
+  # Configure target with: CONDUIT_UPLOAD_ENQUEUE_TARGET=agents/uploads/inbox
+  - id: http-upload-multipart-form
+    when:
+      http:
+        method: POST
+        path: /v1/upload
+        # Note: contentType matching for multipart is handled in code due to boundary parameter
+    send:
+      http:
+        status: 200
+        body:
+          success: true
+          message: "Upload processed via multipart handler"
+
   # Health check endpoint
   - id: health-check
     when:
@@ -265,3 +318,168 @@ rules:
         fields:
           id: $message.nack
           delayMs: $message.delayMs
+
+# ========================================
+# TENANT OVERLAYS (T5062)
+# ========================================
+# Per-tenant rule overlays allow tenant-specific endpoint customization.
+# Tenant rules are checked FIRST, before base rules.
+# This enables multi-tenant deployments with custom endpoints per tenant.
+
+tenantOverlays:
+  # Example: Tenant A with custom webhook and enhanced security
+  tenant-a:
+    rules:
+      # Custom webhook endpoint for tenant A
+      - id: tenant-a-webhook
+        when:
+          http:
+            method: POST
+            path: /v1/webhook/incoming
+            headers:
+              x-tenant-id: tenant-a
+        send:
+          frame:
+            type: enqueue
+            fields:
+              to: agents/tenant-a/webhooks/inbox
+              envelope:
+                id: $body.id
+                type: webhook
+                source: external
+                payload: $body
+            respond:
+              http:
+                status: 202
+                body:
+                  accepted: true
+                  tenant: tenant-a
+                  webhookId: $result.id
+        onError:
+          InvalidJSON:
+            http:
+              status: 400
+              body:
+                error: InvalidWebhook
+                message: Webhook payload must be valid JSON
+                tenant: tenant-a
+
+      # Tenant A requires auth on all /v1/enqueue calls
+      - id: tenant-a-secure-enqueue
+        when:
+          http:
+            method: POST
+            path: /v1/enqueue
+            headers:
+              x-tenant-id: tenant-a
+              authorization: "Bearer tenant-a-secret-*"
+        send:
+          frame:
+            type: enqueue
+            fields:
+              to: agents/tenant-a/$body.to
+              envelope: $body.envelope
+            respond:
+              http:
+                status: 200
+                body: $result
+        onError:
+          Unauthorized:
+            http:
+              status: 401
+              body:
+                error: Unauthorized
+                message: Tenant A requires Bearer token authentication
+                tenant: tenant-a
+
+  # Example: Tenant B with custom endpoints and error handling
+  tenant-b:
+    rules:
+      # Special priority endpoint for tenant B
+      - id: tenant-b-priority-enqueue
+        when:
+          http:
+            method: POST
+            path: /v1/priority/enqueue
+            headers:
+              x-tenant-id: tenant-b
+        send:
+          frame:
+            type: enqueue
+            fields:
+              to: agents/tenant-b/priority/$body.to
+              envelope:
+                id: $body.envelope.id
+                type: $body.envelope.type
+                priority: high
+                tenant: tenant-b
+                payload: $body.envelope.payload
+            respond:
+              http:
+                status: 202
+                body:
+                  success: true
+                  priority: high
+                  messageId: $result.id
+                  queuedAt: $result.ts
+
+      # Custom error response format for tenant B
+      - id: tenant-b-snapshot
+        when:
+          http:
+            method: GET
+            path: /v1/snapshot
+            headers:
+              x-tenant-id: tenant-b
+        send:
+          frame:
+            type: snapshot
+            fields:
+              view: agents/tenant-b/$query.view
+            respond:
+              http:
+                status: 200
+                body:
+                  tenant: tenant-b
+                  view: $query.view
+                  data: $result
+                  timestamp: $now
+        onError:
+          UnknownView:
+            http:
+              status: 404
+              body:
+                status: error
+                errorCode: VIEW_NOT_FOUND
+                errorMessage: The requested view does not exist for tenant B
+                tenant: tenant-b
+                view: $query.view
+
+  # Example: Tenant C with WebSocket customization
+  tenant-c:
+    rules:
+      # Custom subscription path for tenant C
+      - id: tenant-c-subscribe
+        when:
+          ws:
+            path: /v1/tenant-c/subscribe
+            query:
+              stream: "*"
+        send:
+          frame:
+            type: subscribe
+            fields:
+              stream: agents/tenant-c/$query.stream
+            respond:
+              ws:
+                message:
+                  status: subscribed
+                  tenant: tenant-c
+                  stream: $query.stream
+                  features: [high-throughput, custom-ack]
+        onError:
+          UnknownStream:
+            ws:
+              close:
+                code: 1008
+                reason: Tenant C requires valid stream parameter

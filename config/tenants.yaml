@@ -1,0 +1,31 @@
+# Multi-tenant configuration
+# Each tenant has isolated quotas and tracking
+tenants:
+  tenant-a:
+    tokens:
+      - token-a1
+      - token-a2
+    limits:
+      rateLimit: 1000           # requests per minute
+      maxConcurrentUploads: 10  # simultaneous uploads
+      maxUploadSize: 104857600  # 100MB in bytes
+      maxConnections: 50        # max WebSocket connections
+  
+  tenant-b:
+    tokens:
+      - token-b1
+    limits:
+      rateLimit: 100
+      maxConcurrentUploads: 5
+      maxUploadSize: 52428800   # 50MB
+      maxConnections: 10
+  
+  # Example: Premium tenant with higher limits
+  premium-tenant:
+    tokens:
+      - premium-token-xyz
+    limits:
+      rateLimit: 5000
+      maxConcurrentUploads: 50
+      maxUploadSize: 524288000  # 500MB
+      maxConnections: 200

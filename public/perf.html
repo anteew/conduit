@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conduit Performance Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0e1a;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #fff;
+      border-bottom: 2px solid #1e3a5f;
+      padding-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #141922;
+      border: 1px solid #1e3a5f;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 14px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .metric {
+      font-size: 36px;
+      font-weight: 600;
+      color: #4a9eff;
+      margin-bottom: 5px;
+    }
+    .metric.green { color: #4ade80; }
+    .metric.yellow { color: #fbbf24; }
+    .metric.red { color: #ef4444; }
+    .subtitle {
+      font-size: 12px;
+      color: #666;
+    }
+    .chart-container {
+      background: #141922;
+      border: 1px solid #1e3a5f;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    canvas {
+      max-width: 100%;
+      height: 200px;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status.ok { background: #065f46; color: #4ade80; }
+    .status.warning { background: #78350f; color: #fbbf24; }
+    .status.error { background: #7f1d1d; color: #ef4444; }
+    .refresh {
+      float: right;
+      color: #666;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #1e3a5f;
+    }
+    th {
+      color: #888;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    td { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      Conduit Performance Dashboard
+      <span class="refresh">Updates every 2s</span>
+    </h1>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">HTTP Requests/sec</div>
+        <div class="metric" id="http-rps">0</div>
+        <div class="subtitle">Last 30 seconds</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">WebSocket Connections</div>
+        <div class="metric green" id="ws-active">0</div>
+        <div class="subtitle"><span id="ws-total">0</span> total connects</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Latency (p95)</div>
+        <div class="metric" id="latency-p95">0ms</div>
+        <div class="subtitle">p50: <span id="latency-p50">0ms</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Queue Depth</div>
+        <div class="metric yellow" id="queue-depth">0</div>
+        <div class="subtitle">BullMQ waiting jobs</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Blob Storage</div>
+        <div class="metric" id="blob-count">0</div>
+        <div class="subtitle"><span id="blob-size">0 MB</span> total</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Error Rate</div>
+        <div class="metric" id="error-rate">0%</div>
+        <div class="subtitle">Last 5 minutes</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="card-title">Request Rate (last 60s)</div>
+      <canvas id="rps-chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <div class="card-title">Top Endpoints</div>
+      <table id="endpoints-table">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Requests</th>
+            <th>Avg Latency</th>
+            <th>Errors</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="/perf.js"></script>
+</body>
+</html>
