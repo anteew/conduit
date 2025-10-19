@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/anteew/xenomorph/tools/schema/ampcode.schema.json",
+  "title": "Amp Plan",
+  "type": "object",
+  "required": ["ampcode", "waves", "tasks"],
+  "properties": {
+    "ampcode": { "type": "string", "const": "v1" },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "parallel", "tasks"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+          "parallel": { "type": "boolean" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "tasks": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "agent", "title", "allowedFiles", "verify", "deliverables"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^T[0-9]{3,5}(-[A-Za-z0-9_.-]+)?$" },
+          "agent": { "type": "string", "enum": ["amp", "claude", "gemini", "copilot", "devin"] },
+          "title": { "type": "string", "minLength": 1 },
+          "why": { "type": "string" },
+          "allowedFiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "forbiddenFiles": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "verify": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "deliverables": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
