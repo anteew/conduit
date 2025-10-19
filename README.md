@@ -20,6 +20,88 @@ curl http://127.0.0.1:9087/health
 - CONDUIT_RECORD=/tmp/conduit.ctrl.jsonl (optional control frame recording)
 - CONDUIT_RECORD_REDACT=true (default: redact sensitive fields like token/auth)
 - CONDUIT_RULES=config/rules.yaml (optional DSL rule file for endpoint customization)
+- CONDUIT_MAX_BODY=1000000 (general body size limit, default 1MB)
+- CONDUIT_MAX_JSON_SIZE=10485760 (JSON body size limit, default 10MB)
+- CONDUIT_HTTP_LOG=reports/gateway-http.log.jsonl (optional structured JSONL logging for HTTP requests)
+- CONDUIT_WS_MESSAGE_RATE_LIMIT=1000 (max messages per window per WebSocket connection, default 1000)
+- CONDUIT_WS_RATE_WINDOW_MS=60000 (rate limit window in milliseconds, default 60000)
+
+## JSON Body Size Limits & Compression
+
+### Size Limits
+
+Conduit enforces separate size limits for JSON and non-JSON payloads:
+
+- **General bodies**: 1MB default (`CONDUIT_MAX_BODY`)
+- **JSON bodies**: 10MB default (`CONDUIT_MAX_JSON_SIZE`)
+
+When a JSON request exceeds the limit, Conduit returns HTTP 413 with guidance:
+
+```json
+{
+  "error": "JSON body exceeds 10MB limit",
+  "code": "JSONTooLarge",
+  "suggestion": "Consider using gzip compression (Content-Encoding: gzip) or multipart upload for large data"
+}
+```
+
+All oversized JSON attempts are logged with client IP for security monitoring.
+
+### Using Gzip Compression
+
+For large JSON payloads, use gzip compression to reduce transfer size:
+
+```bash
+# Compress and send JSON with curl
+echo '{"large": "data..."}' | gzip | curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "Content-Encoding: gzip" \
+  --data-binary @- \
+  http://127.0.0.1:9087/v1/enqueue
+```
+
+**Node.js example:**
+```javascript
+const zlib = require('zlib');
+const https = require('https');
+
+const data = JSON.stringify({ large: 'payload...' });
+const compressed = zlib.gzipSync(data);
+
+const req = https.request({
+  hostname: '127.0.0.1',
+  port: 9087,
+  path: '/v1/enqueue',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Encoding': 'gzip',
+    'Content-Length': compressed.length
+  }
+});
+req.write(compressed);
+req.end();
+```
+
+### When to Use Multipart Upload
+
+For payloads >10MB even when compressed, use multipart upload (`application/octet-stream`):
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/octet-stream" \
+  --data-binary @large-file.bin \
+  http://127.0.0.1:9087/v1/upload
+```
+
+See upload endpoint documentation for chunk streaming and progress tracking.
+
+### Performance Implications
+
+- **Gzip compression**: 60-80% size reduction for JSON, minimal CPU overhead
+- **Parsing limits**: Prevents memory exhaustion from malicious or malformed payloads
+- **Streaming**: Large non-JSON uploads stream directly without buffering
+- **Security**: Size limits protect against DoS attacks via payload flooding
 
 ## Control Frame Recording & Debugging
 
@@ -248,6 +330,140 @@ when:
 
 See [docs/rfcs/PROTO-DSL-v0.md](docs/rfcs/PROTO-DSL-v0.md) for complete DSL specification.
 
+## WebSocket Rate Limiting
+
+Conduit implements per-connection rate limiting for WebSocket messages to ensure fairness and prevent abuse.
+
+### How It Works
+
+- **Token bucket algorithm**: Each connection gets its own token bucket that refills continuously
+- **Per-connection tracking**: Rate limits apply per `connId`, not per IP (multiple connections from same client are independent)
+- **Burst allowance**: Allows short bursts while enforcing average rate over time window
+- **Graceful closure**: On rate limit violation, sends error frame then closes with code 1008 (Policy Violation)
+
+### Configuration
+
+```bash
+# Allow 1000 messages per minute per connection
+CONDUIT_WS_MESSAGE_RATE_LIMIT=1000
+CONDUIT_WS_RATE_WINDOW_MS=60000
+```
+
+**Default**: 1000 messages per 60 seconds (16.6 msgs/sec average)
+
+### Behavior on Rate Limit Exceeded
+
+1. Connection receives error frame:
+```json
+{
+  "error": {
+    "code": "RateLimitExceeded",
+    "message": "Message rate limit exceeded"
+  }
+}
+```
+
+2. Connection is closed with WebSocket code **1008** (Policy Violation)
+3. Event is logged: `[WS] Rate limit exceeded for connection ws-123-...`
+
+### Token Bucket Details
+
+- **Tokens refill continuously** at average rate (e.g., 16.6/sec for default 1000/60s)
+- **Burst capacity**: Full bucket size = `CONDUIT_WS_MESSAGE_RATE_LIMIT`
+- **Message cost**: 1 token per message
+- **Window sliding**: Smooth token refill, not fixed window reset
+
+This allows clients to burst up to the full limit, then sustain at the average rate indefinitely.
+
+### Security & Fairness
+
+- **Per-connection isolation**: One slow/abusive connection doesn't affect others
+- **Memory efficient**: Token buckets cleaned up on connection close
+- **DoS protection**: Prevents message flooding attacks
+- **Fair resource sharing**: All connections get equal message budget
+
+### Disabling Rate Limiting
+
+Set `CONDUIT_WS_MESSAGE_RATE_LIMIT=0` or `CONDUIT_WS_RATE_WINDOW_MS=0` to disable.
+
+## Testing
+
+### Test Suite
+
+Conduit includes comprehensive testing for stability and performance:
+
+| Test | Purpose | Duration | Load Profile |
+|------|---------|----------|--------------|
+| **http_bidir.test.ts** | HTTP bidirectional flow | ~5s | Sequential enqueue + stats |
+| **ws_bidir.test.ts** | WebSocket credit flow | ~10s | Credit grant + delivery |
+| **T3022-ws-errors.test.ts** | WebSocket error handling | ~5s | Error scenarios |
+| **perf_small.test.ts** | Latency benchmark | ~2min | Up to 50 concurrent, 60s sustained |
+| **large_payload.test.ts** | Large payload handling | ~30s | 1MB-10MB payloads |
+| **json_cap.test.ts** | JSON size limits | ~10s | Size cap enforcement |
+| **soak_mixed.test.ts** | 15-min stability soak | 15min | Mixed HTTP/WS/upload load |
+
+### Running Tests
+
+```bash
+# Build first
+npm run build
+
+# Individual tests
+npm run test:compile && node tests_compiled/http_bidir.test.js
+npm run test:compile && node tests_compiled/ws_bidir.test.js
+
+# Performance benchmarks
+npm run bench:small
+npm run bench:large
+
+# Soak test (15 minutes)
+npm run test:compile && node tests_compiled/soak_mixed.test.js
+```
+
+### Soak Test (T4062)
+
+The **soak_mixed.test.ts** runs for 15 minutes with:
+
+- **20 HTTP clients**: Alternating enqueue and stats requests
+- **30 WebSocket clients**: Subscribe with credit flow
+- **10 Upload clients**: 10-100KB multipart uploads
+
+**Metrics tracked:**
+- Throughput (requests/sec)
+- Memory usage (RSS, heap)
+- Active connections
+- Error rates and types
+
+**Reports every 30 seconds** showing:
+- Request counts and rates
+- Memory snapshots
+- Connection stability
+- Error distribution
+
+**Final assessment includes:**
+- ✅ Throughput (>1000 requests)
+- ✅ Error rate (<1%)
+- ✅ Memory stability (growth <10%)
+- ✅ Clean shutdown (no lingering connections)
+
+**Configuration:**
+```bash
+# Override duration (default: 15 minutes)
+CONDUIT_SOAK_DURATION_MIN=30 npm run test:compile && node tests_compiled/soak_mixed.test.js
+
+# With upload directory
+CONDUIT_UPLOAD_DIR=uploads npm run test:compile && node tests_compiled/soak_mixed.test.js
+```
+
+**Expected results:**
+- 5,000-15,000 total requests over 15 minutes
+- <0.1% error rate
+- Stable memory (±10% growth)
+- All connections closed cleanly
+
+Use this test to detect memory leaks, connection leaks, and throughput degradation under sustained mixed load.
+
 ## Docs
 - docs/rfcs/CONTROL-PROTOCOL-v1.md — frames used between Conduit and core.
 - docs/rfcs/PROTO-DSL-v0.md — translator DSL for mapping external protocols to frames.
+- docs/OBSERVABILITY.md — structured JSONL logging for agent-friendly observability.

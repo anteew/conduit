@@ -1,0 +1,3 @@
+{"ts":"2025-10-19T14:17:14.062Z","event":"http_request_complete","ip":"127.0.0.1","method":"GET","path":"/health","durMs":1,"status":200}
+{"ts":"2025-10-19T14:17:14.070Z","event":"http_request_complete","ip":"127.0.0.1","method":"GET","path":"/nonexistent","durMs":0,"status":404,"error":"not_found"}
+{"ts":"2025-10-19T14:17:14.074Z","event":"http_request_complete","ip":"127.0.0.1","method":"POST","path":"/v1/enqueue","bytes":40,"durMs":1,"status":200}

@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { applyRules } from '../dsl/interpreter.js';
 import { loadDSL } from '../dsl/loader.js';
+import { WSRateLimiter } from './ws-rate-limiter.js';
 function sendError(ws, code, message, closeCode) {
     try {
         ws.send(JSON.stringify({ error: { code, message } }));
@@ -10,6 +11,8 @@ function sendError(ws, code, message, closeCode) {
     catch { }
 }
 let dslConfig = null;
+let rateLimiter = null;
+let connIdCounter = 0;
 export function loadDSLConfig(path) {
     dslConfig = loadDSL(path);
     console.log(`[WS] Loaded DSL rules from ${path}: ${dslConfig.rules.length} rules`);
@@ -23,8 +26,16 @@ export function startWs(client, port = 9088, bind = '127.0.0.1') {
             console.error(`[WS] Failed to load DSL rules: ${e.message}`);
         }
     }
+    const messageRateLimit = parseInt(process.env.CONDUIT_WS_MESSAGE_RATE_LIMIT || '1000', 10);
+    const windowMs = parseInt(process.env.CONDUIT_WS_RATE_WINDOW_MS || '60000', 10);
+    if (messageRateLimit > 0 && windowMs > 0) {
+        rateLimiter = new WSRateLimiter({ messageRateLimit, windowMs });
+        console.log(`[WS] Rate limiting enabled: ${messageRateLimit} msgs/${windowMs}ms per connection`);
+    }
     const wss = new WebSocketServer({ port, host: bind });
     wss.on('connection', async (ws, req) => {
+        const connId = `ws-${++connIdCounter}-${Date.now()}`;
+        console.log(`[WS] Connection ${connId} established`);
         const url = new URL(req.url || '', 'ws://local');
         const headers = {};
         Object.entries(req.headers).forEach(([k, v]) => {
@@ -71,6 +82,11 @@ export function startWs(client, port = 9088, bind = '127.0.0.1') {
             client.subscribe(stream, (env) => ws.send(JSON.stringify({ deliver: env })));
         }
         ws.on('message', async (data) => {
+            if (rateLimiter && !rateLimiter.checkAndConsume(connId)) {
+                console.warn(`[WS] Rate limit exceeded for connection ${connId}`);
+                sendError(ws, 'RateLimitExceeded', 'Message rate limit exceeded', 1008);
+                return;
+            }
             try {
                 const msg = JSON.parse(String(data));
                 if (dslConfig) {
@@ -100,6 +116,12 @@ export function startWs(client, port = 9088, bind = '127.0.0.1') {
             catch (e) {
                 sendError(ws, 'InvalidJSON', e?.message || 'Malformed JSON', 1007);
             }
+        });
+        ws.on('close', () => {
+            if (rateLimiter) {
+                rateLimiter.cleanup(connId);
+            }
+            console.log(`[WS] Connection ${connId} closed`);
         });
     });
     return wss;

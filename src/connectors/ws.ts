@@ -3,12 +3,15 @@ import { PipeClient } from '../control/client.js';
 import { DSLConfig, RuleContext } from '../dsl/types.js';
 import { applyRules } from '../dsl/interpreter.js';
 import { loadDSL } from '../dsl/loader.js';
+import { WSRateLimiter, WSRateLimiterConfig } from './ws-rate-limiter.js';
 
 function sendError(ws: WebSocket, code: string, message: string, closeCode?: number) {
   try{ ws.send(JSON.stringify({ error: { code, message } })); if(closeCode) ws.close(closeCode,message); }catch{}
 }
 
 let dslConfig: DSLConfig | null = null;
+let rateLimiter: WSRateLimiter | null = null;
+let connIdCounter = 0;
 
 export function loadDSLConfig(path: string) {
   dslConfig = loadDSL(path);
@@ -24,8 +27,18 @@ export function startWs(client: PipeClient, port=9088, bind='127.0.0.1'){
     }
   }
 
+  const messageRateLimit = parseInt(process.env.CONDUIT_WS_MESSAGE_RATE_LIMIT || '1000', 10);
+  const windowMs = parseInt(process.env.CONDUIT_WS_RATE_WINDOW_MS || '60000', 10);
+
+  if (messageRateLimit > 0 && windowMs > 0) {
+    rateLimiter = new WSRateLimiter({ messageRateLimit, windowMs });
+    console.log(`[WS] Rate limiting enabled: ${messageRateLimit} msgs/${windowMs}ms per connection`);
+  }
+
   const wss = new WebSocketServer({ port, host: bind });
   wss.on('connection', async (ws, req) => {
+    const connId = `ws-${++connIdCounter}-${Date.now()}`;
+    console.log(`[WS] Connection ${connId} established`);
     const url = new URL(req.url||'', 'ws://local');
     
     const headers: Record<string, string> = {};
@@ -67,6 +80,12 @@ export function startWs(client: PipeClient, port=9088, bind='127.0.0.1'){
     }
 
     ws.on('message', async (data: RawData) => {
+      if (rateLimiter && !rateLimiter.checkAndConsume(connId)) {
+        console.warn(`[WS] Rate limit exceeded for connection ${connId}`);
+        sendError(ws, 'RateLimitExceeded', 'Message rate limit exceeded', 1008);
+        return;
+      }
+
       try {
         const msg = JSON.parse(String(data));
         
@@ -92,6 +111,13 @@ export function startWs(client: PipeClient, port=9088, bind='127.0.0.1'){
       } catch(e: any) {
         sendError(ws,'InvalidJSON',e?.message||'Malformed JSON',1007);
       }
+    });
+
+    ws.on('close', () => {
+      if (rateLimiter) {
+        rateLimiter.cleanup(connId);
+      }
+      console.log(`[WS] Connection ${connId} closed`);
     });
   });
   return wss;

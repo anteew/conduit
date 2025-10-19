@@ -82,6 +82,35 @@ rules:
   # HTTP ENDPOINTS
   # ========================================
   
+  # HTTP enqueue for large binary uploads (no JSON parse)
+  # Matches before the JSON /v1/enqueue rule via contentType
+  - id: http-enqueue-octet-stream
+    when:
+      http:
+        method: POST
+        path: /v1/enqueue
+        contentType: application/octet-stream
+    send:
+      http:
+        status: 202
+        body:
+          ok: true
+          accepted: true
+
+  # Dedicated upload sink for octet-stream (preferred)
+  - id: http-upload-octet-stream
+    when:
+      http:
+        method: POST
+        path: /v1/upload
+        contentType: application/octet-stream
+    send:
+      http:
+        status: 202
+        body:
+          ok: true
+          accepted: true
+
   # Health check endpoint
   - id: health-check
     when:

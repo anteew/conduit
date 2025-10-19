@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",
     "build": "tsc -p .",
-    "test:unit": "node --loader ts-node/esm tests/http_bidir.test.ts",
-    "test:int": "node --loader ts-node/esm tests/ws_bidir.test.ts",
-    "bench:small": "node --loader ts-node/esm tests/perf_small.test.ts",
-    "bench:large": "node --loader ts-node/esm tests/large_payload.test.ts"
+    "test:compile": "tsc tests/*.test.ts tests/harness.ts --module ES2022 --target ES2022 --moduleResolution Node --allowSyntheticDefaultImports --outDir tests_compiled",
+    "test:unit": "npm run test:compile && node tests_compiled/http_bidir.test.js",
+    "test:int": "npm run test:compile && node tests_compiled/ws_bidir.test.js",
+    "bench:small": "npm run test:compile && node tests_compiled/perf_small.test.js",
+    "bench:large": "npm run test:compile && node tests_compiled/large_payload.test.js",
+    "test:load-ws": "npm run test:compile && node tests_compiled/concurrent_ws.test.js",
+    "test:load-uploads": "npm run test:compile && node tests_compiled/concurrent_uploads.test.js"
   },
   "devDependencies": {
     "@types/node": "^24.8.1",
