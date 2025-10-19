@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "test:unit": "node --loader ts-node/esm tests/http_bidir.test.ts",
+    "test:int": "node --loader ts-node/esm tests/ws_bidir.test.ts",
+    "bench:small": "node --loader ts-node/esm tests/perf_small.test.ts",
+    "bench:large": "node --loader ts-node/esm tests/large_payload.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.8.1",
