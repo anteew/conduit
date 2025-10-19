@@ -1,145 +1,128 @@
 {
   "ampcode": "v1",
   "waves": [
-    { "id": "Wave-BlobRef-Admin", "parallel": true, "tasks": [
-      "T6101-OctetStream-BlobRef",
-      "T6102-Admin-Reload-Endpoint"
+    { "id": "Wave-Registry", "parallel": true, "tasks": [
+      "T6201-Codec-Registry-Adapters"
     ]},
-    { "id": "Wave-Queue-Auth", "parallel": true, "tasks": [
-      "T6103-QueueRef-Endpoint",
-      "T6104-Auth-XToken-Allowlist"
+    { "id": "Wave-HTTP-Codecs", "parallel": true, "tasks": [
+      "T6202-HTTP-Decode-Path",
+      "T6203-HTTP-Encode-Path",
+      "T6204-HTTP-Observability"
     ]},
-    { "id": "Wave-Limits-Tests", "parallel": true, "tasks": [
-      "T6105-HTTP-HeaderTimeout-Tests",
-      "T6108-WS-Oversize-Error-Test"
+    { "id": "Wave-WS-Codecs", "parallel": true, "tasks": [
+      "T6205-WS-Negotiation",
+      "T6206-WS-Codec-Tests"
     ]},
-    { "id": "Wave-Metrics-Docs", "parallel": true, "tasks": [
-      "T6106-Metrics-Expand-Validation",
-      "T6107-Docs-Runbook-Examples"
+    { "id": "Wave-Perf-Docs", "parallel": true, "tasks": [
+      "T6207-Perf-Small",
+      "T6208-Docs-Examples"
     ]},
-    { "id": "Wave-Examples-UI", "parallel": true, "tasks": [
-      "T6109-UI-BlobRef-Examples"
+    { "id": "Wave-Optional-CBOR", "parallel": true, "tasks": [
+      "T6209-CBOR-Adapter"
     ]},
-    { "id": "Wave-Tenancy-Quotas", "parallel": true, "tasks": [
-      "T6110-Tenant-Quotas-Enforcement"
+    { "id": "Wave-Guardrails", "parallel": true, "tasks": [
+      "T6210-Decoded-Limits"
     ]}
   ],
   "tasks": [
     {
-      "id": "T6101-OctetStream-BlobRef",
+      "id": "T6201-Codec-Registry-Adapters",
       "agent": "amp",
-      "title": "Wire octet-stream /v1/upload to blobSink and return { blobRef }",
-      "why": "Unify large-binary fast path with multipart: stream to BlobSink (local/S3/MinIO) and return a compact blobRef for downstream agents.",
-      "allowedFiles": [
-        "src/connectors/http.ts",
-        "src/backends/**",
-        "docs/BACKENDS.md",
-        "docs/SRE-RUNBOOK.md",
-        "tests/**"
-      ],
+      "title": "Finalize codec registry and adapters (json, msgpack) with unit tests",
+      "why": "Provide a single, reusable codec API for all connectors and future protocols.",
+      "allowedFiles": ["src/codec/**", "tests/**"],
       "verify": [
-        "npm run test:compile",
-        "node -e \"const http=require('http'); const fs=require('fs'); const {spawn}=require('child_process'); const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env:{...process.env,CONDUIT_RULES:'config/rules.yaml',CONDUIT_UPLOAD_SYNC:'true'}}); setTimeout(()=>{ const req=http.request('http://127.0.0.1:9087/v1/upload',{method:'POST',headers:{'content-type':'application/octet-stream'}},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>{console.log(d); srv.kill();});}); req.end(Buffer.alloc(1024*1024,'x')); },800);\""
+        "node -e \"const { listCodecs } = require('./dist/codec/registry.js'); console.log(listCodecs().map(c=>c.name).join(','));\""
       ],
-      "deliverables": [
-        "src/connectors/http.ts",
-        "reports/verification/T6101.log"
-      ]
+      "deliverables": ["src/codec/**", "tests/codec_roundtrip.test.ts"]
     },
     {
-      "id": "T6102-Admin-Reload-Endpoint",
+      "id": "T6202-HTTP-Decode-Path",
       "agent": "amp",
-      "title": "Add POST /v1/admin/reload (auth-protected) to reload DSL and tenants",
-      "why": "Complement SIGHUP with HTTP-triggered reload for ops tooling and CI hooks.",
+      "title": "HTTP: decode request bodies via registry by Content-Type (flagged)",
+      "why": "Support msgpack/cbor inputs without touching DSL or backends.",
       "allowedFiles": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
       "verify": [
-        "CONDUIT_TOKENS=dev npm run test:compile",
-        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_TOKENS:'dev',CONDUIT_RULES:'config/rules.yaml'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const req=http.request('http://127.0.0.1:9087/v1/admin/reload',{method:'POST',headers:{Authorization:'Bearer dev'}},res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.end(); },800);\""
-      ],
-      "deliverables": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md"]
-    },
-    {
-      "id": "T6103-QueueRef-Endpoint",
-      "agent": "amp",
-      "title": "Add POST /v1/queue to enqueue to Queue backend and return queueRef",
-      "why": "Expose queueRef pattern via HTTP for asynchronous processing.",
-      "allowedFiles": ["src/connectors/http.ts", "src/backends/queue/**", "docs/BACKENDS.md", "tests/**"],
-      "verify": [
-        "CONDUIT_QUEUE_BACKEND=bullmq CONDUIT_QUEUE_REDIS_URL=redis://localhost:6379 npm run test:compile",
-        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_QUEUE_BACKEND:'bullmq',CONDUIT_QUEUE_REDIS_URL:'redis://localhost:6379'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const body=JSON.stringify({queue:'jobs/default',message:{hello:'world'}}); const req=http.request('http://127.0.0.1:9087/v1/queue',{method:'POST',headers:{'content-type':'application/json','content-length':Buffer.byteLength(body)}},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>{console.log(d); srv.kill();});}); req.write(body); req.end(); },800);\""
-      ],
-      "deliverables": ["src/connectors/http.ts", "docs/BACKENDS.md"]
-    },
-    {
-      "id": "T6104-Auth-XToken-Allowlist",
-      "agent": "amp",
-      "title": "Accept X-Token as an alternative to Authorization: Bearer on protected endpoints",
-      "why": "Support simple token clients and curl without Authorization header.",
-      "allowedFiles": ["src/connectors/http.ts", "docs/PRODUCTION-DEPLOYMENT.md"],
-      "verify": [
-        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_TOKENS:'dev'}; const srv=spawn('node',['--loader','ts-node/esm','src/index.ts'],{env}); setTimeout(()=>{ const body=JSON.stringify({to:'agents/Test/inbox',envelope:{id:'e1'}}); const req=http.request('http://127.0.0.1:9087/v1/enqueue',{method:'POST',headers:{'content-type':'application/json','x-token':'dev','content-length':Buffer.byteLength(body)}},res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.write(body); req.end(); },800);\""
+        "CONDUIT_CODECS_HTTP=true npm run test:compile",
+        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const { pack }=require('msgpackr'); const env={...process.env,CONDUIT_CODECS_HTTP:'true'}; const srv=spawn('node',['dist/index.js'],{env}); setTimeout(()=>{ const body=pack({to:'agents/Codec/inbox',envelope:{id:'x'}}); const req=http.request('http://127.0.0.1:9087/v1/enqueue',{method:'POST',headers:{'content-type':'application/msgpack','content-length':body.length}} ,res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.write(body); req.end(); },700);\""
       ],
       "deliverables": ["src/connectors/http.ts"]
     },
     {
-      "id": "T6105-HTTP-HeaderTimeout-Tests",
+      "id": "T6203-HTTP-Encode-Path",
       "agent": "amp",
-      "title": "Add tests for header-size limits (431) and request/headers timeouts",
-      "why": "Ensure slowloris/header abuse protections are validated in CI.",
-      "allowedFiles": ["tests/**", "docs/SRE-RUNBOOK.md"],
-      "verify": ["npm run test:compile && node tests_compiled/tests/concurrent_uploads.test.js"],
-      "deliverables": ["tests/header_limits.test.ts", "tests/slowloris_timeout.test.ts"]
-    },
-    {
-      "id": "T6106-Metrics-Expand-Validation",
-      "agent": "amp",
-      "title": "Validate expanded /v1/metrics (HTTP+WS counters, bytes, p50/p95/p99, per-tenant)",
-      "why": "SRE dashboards and agent-first observability rely on accurate counters.",
-      "allowedFiles": ["tests/**", "docs/OBSERVABILITY.md"],
+      "title": "HTTP: negotiate response via Accept with X-Codec override (flagged)",
+      "why": "Serve msgpack/cbor responses where clients prefer binary; preserve JSON fallback.",
+      "allowedFiles": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
       "verify": [
-        "npm run test:compile && node tests_compiled/ws_bidir.test.js",
-        "curl -s http://127.0.0.1:9087/v1/metrics | jq '.http.durations' || true"
+        "CONDUIT_CODECS_HTTP=true node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_CODECS_HTTP:'true'}; const srv=spawn('node',['dist/index.js'],{env}); setTimeout(()=>{ http.get({host:'127.0.0.1',port:9087,path:'/v1/metrics',headers:{Accept:'application/msgpack'}},res=>{console.log('CT',res.headers['content-type']); res.resume(); res.on('end',()=>srv.kill());}); },700);\""
       ],
-      "deliverables": ["tests/metrics_validation.test.ts"]
+      "deliverables": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md"]
     },
     {
-      "id": "T6107-Docs-Runbook-Examples",
+      "id": "T6204-HTTP-Observability",
       "agent": "amp",
-      "title": "Document admin reload, blobRef responses, queueRef usage; update SRE runbook and examples",
-      "why": "Keep operators and developers aligned with the implemented behavior.",
-      "allowedFiles": ["docs/**", "examples/**", "public/**"],
-      "verify": ["rg -n 'blobRef|/v1/admin/reload|/v1/queue' docs examples public -S"],
-      "deliverables": ["docs/SRE-RUNBOOK.md", "docs/BACKENDS.md", "examples/*"]
+      "title": "HTTP: log codec + per-codec metrics counters/bytes",
+      "why": "Operator visibility into protocol usage and impact.",
+      "allowedFiles": ["src/connectors/http.ts", "docs/OBSERVABILITY.md", "tests/**"],
+      "verify": ["curl -s http://127.0.0.1:9087/v1/metrics | jq .http | true"],
+      "deliverables": ["src/connectors/http.ts", "docs/OBSERVABILITY.md"]
     },
     {
-      "id": "T6108-WS-Oversize-Error-Test",
+      "id": "T6205-WS-Negotiation",
       "agent": "amp",
-      "title": "Add explicit WS 1009 oversize-message test and JSONL log assertion",
-      "why": "Ensure consistent error-close behavior and logging for large WS payloads.",
+      "title": "WS: negotiate ?codec=... and support binary frames for msgpack/cbor (flagged)",
+      "why": "Symmetric codec support and performance for WS flows.",
+      "allowedFiles": ["src/connectors/ws.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
+      "verify": [
+        "CONDUIT_CODECS_WS=true npm run test:compile && node tests_compiled/tests/ws_bidir.test.js"
+      ],
+      "deliverables": ["src/connectors/ws.ts"]
+    },
+    {
+      "id": "T6206-WS-Codec-Tests",
+      "agent": "amp",
+      "title": "WS: add tests for codec negotiation, error mapping, and oversize with binary frames",
+      "why": "Ensure correctness and safety for WS binary flows.",
       "allowedFiles": ["tests/**"],
-      "verify": ["npm run test:compile && node tests_compiled/T3022-ws-errors.test.js"],
-      "deliverables": ["tests/ws_oversize.test.ts"]
+      "verify": ["npm run test:compile && node tests_compiled/tests/ws_oversize.test.js"],
+      "deliverables": ["tests/ws_codecs.test.ts"]
     },
     {
-      "id": "T6109-UI-BlobRef-Examples",
+      "id": "T6207-Perf-Small",
       "agent": "amp",
-      "title": "Update UI to display blobRef on upload and provide copy-to-clipboard",
-      "why": "Developer feedback loop for uploads should expose the reference, not raw file paths.",
-      "allowedFiles": ["public/**", "docs/**"],
-      "verify": ["rg -n 'blobRef' public -S"],
-      "deliverables": ["public/index.html", "public/ui.js"]
+      "title": "Perf: compare JSON vs msgpack small-message latency and p50/p95",
+      "why": "Quantify benefits and regressions; inform defaults.",
+      "allowedFiles": ["tests/**", "public/**", "docs/OBSERVABILITY.md"],
+      "verify": ["npm run bench:small"],
+      "deliverables": ["tests/perf_small_codecs.test.ts", "public/perf.html"]
     },
     {
-      "id": "T6110-Tenant-Quotas-Enforcement",
+      "id": "T6208-Docs-Examples",
       "agent": "amp",
-      "title": "Enforce per-tenant quotas consistently (requests/uploads/connections) and tag logs/metrics",
-      "why": "Multi-tenant safety and isolation.",
-      "allowedFiles": ["src/tenancy/**", "src/connectors/http.ts", "src/connectors/ws.ts", "config/tenants.yaml", "docs/**"],
-      "verify": [
-        "CONDUIT_TENANT_CONFIG=config/tenants.yaml npm run test:compile",
-        "node tests_compiled/concurrent_ws.test.js || true"
-      ],
-      "deliverables": ["config/tenants.yaml", "src/tenancy/tenant-manager.ts"]
+      "title": "Docs: add HTTP/WS codec examples (Accept, Content-Type, ?codec)",
+      "why": "Make it simple for developers to opt into binary codecs.",
+      "allowedFiles": ["docs/SRE-RUNBOOK.md", "docs/rfcs/**"],
+      "verify": ["rg -n 'application/msgpack|application/cbor|\\?codec=' docs -S"],
+      "deliverables": ["docs/SRE-RUNBOOK.md"]
+    },
+    {
+      "id": "T6209-CBOR-Adapter",
+      "agent": "amp",
+      "title": "Optional CBOR (cbor-x) adapter behind flag with unit tests",
+      "why": "Offer a standards-oriented alternative to msgpack.",
+      "allowedFiles": ["src/codec/**", "tests/**"],
+      "verify": ["node -e \"console.log('ok')\""],
+      "deliverables": ["src/codec/cbor.ts", "tests/codec_cbor.test.ts"]
+    },
+    {
+      "id": "T6210-Decoded-Limits",
+      "agent": "amp",
+      "title": "Add decoded size/depth caps; map codec errors to 400/1007; tests",
+      "why": "Harden against pathological or malicious payloads.",
+      "allowedFiles": ["src/connectors/http.ts", "src/connectors/ws.ts", "docs/OBSERVABILITY.md", "tests/**"],
+      "verify": ["npm run test:compile && node tests_compiled/tests/json_cap.test.js"],
+      "deliverables": ["src/connectors/http.ts", "src/connectors/ws.ts"]
     }
   ]
 }
