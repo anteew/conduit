@@ -6,8 +6,6 @@
 
 import * as http from 'http';
 import WebSocket from 'ws';
-import { startHttp, makeClientWithDemo } from '../src/connectors/http.js';
-import { startWs } from '../src/connectors/ws.js';
 import { CodecRegistry } from '../src/codec/registry.js';
 import { JsonCodec } from '../src/codec/json.js';
 import { createMsgPackCodec } from '../src/codec/msgpack.js';
@@ -37,16 +35,18 @@ async function run() {
   process.env.CONDUIT_CODEC_MAX_DECODED_SIZE = '256';
   process.env.CONDUIT_CODEC_MAX_DEPTH = '4';
 
-  // HTTP server
-  const httpClient = makeClientWithDemo();
-  const httpServer = startHttp(httpClient, HTTP_PORT, '127.0.0.1');
+  // HTTP server (import after setting env so feature gates are honored)
+  const httpMod: any = await import('../src/connectors/http.js');
+  const httpClient = httpMod.makeClientWithDemo();
+  const httpServer = httpMod.startHttp(httpClient, HTTP_PORT, '127.0.0.1');
 
   // WS server with registry
   const registry = new CodecRegistry({ defaultCodec: 'json' });
   registry.register(new JsonCodec());
   const mp = await createMsgPackCodec();
   if (mp) registry.register(mp);
-  const wsServer = startWs(httpClient, WS_PORT, '127.0.0.1', registry);
+  const wsMod: any = await import('../src/connectors/ws.js');
+  const wsServer = wsMod.startWs(httpClient, WS_PORT, '127.0.0.1', registry);
   await new Promise((r) => setTimeout(r, 200));
 
   let passed = 0; let failed = 0;
