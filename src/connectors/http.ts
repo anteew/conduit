@@ -2014,6 +2014,7 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
           const reloadStartTime = Date.now();
           let rulesCount = 0;
           let tenantsCount = 0;
+          let guardrails: { maxDecodedSize: number; maxDepth: number } | null = null;
           const errors: string[] = [];
           
           // Reload DSL rules if configured
@@ -2033,6 +2034,14 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
             tenantsCount = Object.keys(tenantMetrics).length;
           } catch (err: any) {
             errors.push(`Tenant reload failed: ${err.message}`);
+          }
+
+          // Reload guardrails (codec limits)
+          try {
+            reloadGuardrails();
+            guardrails = { maxDecodedSize: guardrailsConfig.maxDecodedSize, maxDepth: guardrailsConfig.maxDepth } as any;
+          } catch (err: any) {
+            errors.push(`Guardrails reload failed: ${err.message}`);
           }
           
           const status = errors.length === 0 ? 'reloaded' : 'partial';
@@ -2058,6 +2067,7 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
             timestamp: new Date().toISOString(),
             rulesCount,
             tenantsCount,
+            guardrails,
             errors: errors.length > 0 ? errors : undefined
           });
         } catch (e: any) {
@@ -2181,4 +2191,16 @@ export async function makeClientWithTerminal(config: TerminalConfig, rec?: (f:an
   return client;
 }
 // Cache guardrails once (env-driven). Can be refreshed on process reload if needed.
-const guardrailsConfig = getGuardrailsFromEnv();
+let guardrailsConfig = getGuardrailsFromEnv();
+
+// Expose a reload helper so SIGHUP/admin endpoint can refresh limits without restart
+export function reloadGuardrails() {
+  try {
+    guardrailsConfig = getGuardrailsFromEnv();
+    lastReloadTime = Date.now();
+    console.log(`[Reload] Guardrails reloaded: maxDecodedSize=${guardrailsConfig.maxDecodedSize}, maxDepth=${guardrailsConfig.maxDepth}`);
+  } catch (error: any) {
+    console.error(`[Reload] Failed to reload guardrails: ${error.message}`);
+    throw error;
+  }
+}
