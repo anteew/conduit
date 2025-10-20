@@ -186,11 +186,13 @@ const wsMetrics = {
 };
 
 export function getWsMetrics() {
-    const summarize = (arr: number[]) => {
-    
-      return { p50: 0, p95: 0, count: 0 };
-    const a=[...arr].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return { p50, p95, count: a.length };
-  }
+  const summarize = (arr: number[]) => {
+    const a = [...arr].sort((x, y) => x - y);
+    const p50 = a[Math.floor(a.length * 0.5)] || 0;
+    const p95 = a[Math.floor(a.length * 0.95)] || 0;
+    const p99 = a[Math.floor(a.length * 0.99)] || 0;
+    return { p50, p95, p99, count: a.length };
+  };
   return {
     connectionsTotal: wsMetrics.connectionsTotal,
     activeConnections: wsMetrics.activeConnections,
