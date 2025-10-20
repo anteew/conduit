@@ -26,6 +26,18 @@ curl http://localhost:9087/health
 # During drain: {"status":"draining"} with 503 status
 ```
 
+### Quick CLI (mkctl)
+
+For local checks, use the helper script:
+
+```bash
+scripts/mkctl.sh health            # 127.0.0.1:9087 by default
+scripts/mkctl.sh metrics
+scripts/mkctl.sh reload
+```
+
+Pass an alternate host/port as the second argument, e.g. `scripts/mkctl.sh health 10.0.0.5:9087`.
+
 ### Metrics Endpoint
 
 **GET /v1/metrics**
@@ -116,6 +128,10 @@ curl http://localhost:9087/health
 - **gateway.errors**: HTTP error code distribution
 - **tenants**: Per-tenant connection and delivery stats
 - **uptime**: Process uptime in seconds
+
+Deployment notes:
+- Build dist with `npm run build` and run with `npm run start:dist` or use systemd unit at `docs/systemd/conduit.service` (ExecStart runs `node dist/index.js`).
+- Ensure environment variables are exported before the service starts.
 
 ---
 
