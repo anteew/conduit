@@ -203,7 +203,9 @@ function send(res: http.ServerResponse, code: number, body: any, idempotencyKey?
   
   // Encode response body
   try {
+    const t0 = Date.now();
     const encoded = codec.encode(body);
+    pushDuration(codecMetrics.encodeDurationsByCodec, codec.name, Date.now()-t0);
     const encodedBytes = encoded.length;
     res.writeHead(code, {'content-type': codec.contentTypes[0] || 'application/json'});
     res.end(encoded);
@@ -380,7 +382,9 @@ const codecMetrics = {
   bytesOutByCodec: new Map<string, number>(),
   decodeErrorsByCodec: new Map<string, number>(),
   sizeCapViolations: new Map<string, number>(),
-  depthCapViolations: new Map<string, number>()
+  depthCapViolations: new Map<string, number>(),
+  decodeDurationsByCodec: new Map<string, number[]>(), // ms
+  encodeDurationsByCodec: new Map<string, number[]>()  // ms
 };
 
 function recordCodecMetrics(operation: 'decode' | 'encode', codec: string, success: boolean, bytes?: number) {
@@ -405,6 +409,23 @@ function recordCodecMetrics(operation: 'decode' | 'encode', codec: string, succe
       codecMetrics.bytesOutByCodec.set(codec, (codecMetrics.bytesOutByCodec.get(codec) || 0) + bytes);
     }
   }
+
+function pushDuration(map: Map<string, number[]>, key: string, durMs: number, cap=1000) {
+  const arr = map.get(key) || [];
+  arr.push(durMs);
+  if (arr.length > cap) arr.shift();
+  map.set(key, arr);
+}
+
+function summarize(arr: number[]) {
+  if (!arr || arr.length === 0) return { p50: 0, p95: 0, count: 0 };
+  const a = [...arr].sort((x,y)=>x-y);
+  const p50 = a[Math.floor(a.length*0.5)] || 0;
+  const p95 = a[Math.floor(a.length*0.95)] || 0;
+  return { p50, p95, count: a.length };
+}
+
+
 }
 
 // Placeholder for WS metrics (populated by ws.ts)
@@ -477,7 +498,9 @@ function getMetricsSummary() {
       bytesOutByCodec: Object.fromEntries(codecMetrics.bytesOutByCodec),
       decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec),
       sizeCapViolations: Object.fromEntries(codecMetrics.sizeCapViolations),
-      depthCapViolations: Object.fromEntries(codecMetrics.depthCapViolations)
+      depthCapViolations: Object.fromEntries(codecMetrics.depthCapViolations),
+      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)])),
+      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)]))
     };
   }
   
@@ -592,7 +615,9 @@ function decodeBody(raw: Buffer, contentType: string | undefined): { success: bo
   
   // Decode with detected codec
   try {
+  const t0 = Date.now();
     const data = codec.decode(raw);
+    pushDuration(codecMetrics.decodeDurationsByCodec, codec.name, Date.now()-t0);
     recordCodecMetrics('decode', codec.name, true, bodyBytes);
     
     // T7120: Check decoded payload size and depth caps
