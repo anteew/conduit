@@ -16,6 +16,7 @@ import { createBlobSink, createQueueSink } from '../backends/factory.js';
 import { IdempotencyCache } from '../idempotency/cache.js';
 import { TenantManager } from '../tenancy/tenant-manager.js';
 import { detectForHttp, chooseForHttpResponse, getCodecByName } from '../codec/registry.js';
+import { getGuardrailsFromEnv, checkDecodedPayload } from '../codec/guards.js';
 function parseCorsOrigins() {
     const originsEnv = process.env.CONDUIT_CORS_ORIGINS?.trim();
     if (!originsEnv) {
@@ -294,7 +295,9 @@ const codecMetrics = {
     requestsByCodec: new Map(),
     bytesInByCodec: new Map(),
     bytesOutByCodec: new Map(),
-    decodeErrorsByCodec: new Map()
+    decodeErrorsByCodec: new Map(),
+    sizeCapViolations: new Map(),
+    depthCapViolations: new Map()
 };
 function recordCodecMetrics(operation, codec, success, bytes) {
     if (!codecsHttpEnabled)
@@ -378,7 +381,9 @@ function getMetricsSummary() {
             requestsByCodec: Object.fromEntries(codecMetrics.requestsByCodec),
             bytesInByCodec: Object.fromEntries(codecMetrics.bytesInByCodec),
             bytesOutByCodec: Object.fromEntries(codecMetrics.bytesOutByCodec),
-            decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec)
+            decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec),
+            sizeCapViolations: Object.fromEntries(codecMetrics.sizeCapViolations),
+            depthCapViolations: Object.fromEntries(codecMetrics.depthCapViolations)
         };
     }
     return summary;
@@ -443,12 +448,14 @@ function normalizeHeaders(h) {
     return out;
 }
 // T7101: Decode request body using codec registry
-function decodeBody(body, contentType) {
-    const bodyBytes = Buffer.byteLength(body);
+function decodeBody(raw, contentType) {
+    const bodyBytes = raw.length;
+    const guardrails = getGuardrailsFromEnv();
     if (!codecsHttpEnabled) {
         // Feature flag disabled, use JSON
         try {
-            const data = body ? JSON.parse(body) : {};
+            const s = raw.length ? raw.toString('utf8') : '';
+            const data = s ? JSON.parse(s) : {};
             return { success: true, data, codec: 'json' };
         }
         catch (e) {
@@ -460,8 +467,20 @@ function decodeBody(body, contentType) {
     if (!codec) {
         // No codec detected, fallback to JSON
         try {
-            const data = body ? JSON.parse(body) : {};
+            const s = raw.length ? raw.toString('utf8') : '';
+            const data = s ? JSON.parse(s) : {};
             recordCodecMetrics('decode', 'json', true, bodyBytes);
+            // T7120: Check decoded payload size and depth caps
+            const check = checkDecodedPayload(data, guardrails);
+            if (check.valid === false) {
+                if (check.reason === 'decoded_size_exceeded') {
+                    codecMetrics.sizeCapViolations.set('json', (codecMetrics.sizeCapViolations.get('json') || 0) + 1);
+                }
+                else if (check.reason === 'depth_exceeded') {
+                    codecMetrics.depthCapViolations.set('json', (codecMetrics.depthCapViolations.get('json') || 0) + 1);
+                }
+                return { success: false, error: check.reason, codec: 'json', capViolation: { reason: check.reason, limit: check.limit, actual: check.actual } };
+            }
             return { success: true, data, codec: 'json' };
         }
         catch (e) {
@@ -471,8 +490,19 @@ function decodeBody(body, contentType) {
     }
     // Decode with detected codec
     try {
-        const data = codec.decode(body);
+        const data = codec.decode(raw);
         recordCodecMetrics('decode', codec.name, true, bodyBytes);
+        // T7120: Check decoded payload size and depth caps
+        const check = checkDecodedPayload(data, guardrails);
+        if (check.valid === false) {
+            if (check.reason === 'decoded_size_exceeded') {
+                codecMetrics.sizeCapViolations.set(codec.name, (codecMetrics.sizeCapViolations.get(codec.name) || 0) + 1);
+            }
+            else if (check.reason === 'depth_exceeded') {
+                codecMetrics.depthCapViolations.set(codec.name, (codecMetrics.depthCapViolations.get(codec.name) || 0) + 1);
+            }
+            return { success: false, error: check.reason, codec: codec.name, capViolation: { reason: check.reason, limit: check.limit, actual: check.actual } };
+        }
         return { success: true, data, codec: codec.name };
     }
     catch (e) {
@@ -752,10 +782,12 @@ async function handleWithDSL(client, req, res) {
             return true;
         }
     }
-    let body = '';
+    const chunks = [];
     let received = 0;
     for await (const chunk of requestStream) {
-        received += chunk.length;
+        const buf = Buffer.from(chunk);
+        received += buf.length;
+        chunks.push(buf);
         if (received > sizeLimit) {
             const durNs = Number(process.hrtime.bigint() - startTime);
             if (isJSON) {
@@ -802,13 +834,15 @@ async function handleWithDSL(client, req, res) {
             req.resume();
             return true;
         }
-        body += chunk;
+        // preserve raw bytes in chunks
     }
     // T7101: Use codec-based body decoding
-    const decodeResult = decodeBody(body, headers['content-type']);
+    const rawBody = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
+    const decodeResult = decodeBody(rawBody, headers['content-type']);
     if (!decodeResult.success) {
         const durNs = Number(process.hrtime.bigint() - startTime);
-        logJsonl({
+        // T7120: Enhanced logging for cap violations
+        const logEntry = {
             ts: new Date().toISOString(),
             event: 'http_request_complete',
             ip,
@@ -817,8 +851,15 @@ async function handleWithDSL(client, req, res) {
             bytes: received,
             durMs: Math.round(durNs / 1e6),
             status: 400,
-            error: 'decode_error'
-        });
+            error: 'decode_error',
+            codec: decodeResult.codec
+        };
+        if (decodeResult.capViolation) {
+            logEntry.capViolation = decodeResult.capViolation.reason;
+            logEntry.capLimit = decodeResult.capViolation.limit;
+            logEntry.capActual = decodeResult.capViolation.actual;
+        }
+        logJsonl(logEntry);
         send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
         return true;
     }
@@ -1015,11 +1056,11 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
         }
         // T6110: Tenant quota enforcement (rate limits)
         if (tenantId) {
-            const rateLimitResult = tenantManager.checkRateLimit(tenantId);
-            if (!rateLimitResult.allowed) {
+            const rateAllowed = tenantManager.checkRateLimit(tenantId);
+            if (!rateAllowed) {
                 activeGlobalConnections--;
                 const durNs = Number(process.hrtime.bigint() - reqStartTime);
-                const retryAfter = rateLimitResult.retryAfter || 60;
+                const retryAfter = 60;
                 logJsonl({
                     ts: new Date().toISOString(),
                     event: 'http_request_complete',
@@ -1199,38 +1240,50 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 return;
             }
             if (req.method === 'POST' && url.pathname === '/v1/enqueue') {
-                let body = '';
-                req.on('data', c => body += c);
+                const chunks = [];
+                let received = 0;
+                req.on('data', (c) => {
+                    const buf = Buffer.isBuffer(c) ? c : Buffer.from(c);
+                    chunks.push(buf);
+                    received += buf.length;
+                });
                 req.on('end', () => {
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
-                    // T7101: Use codec-based decoding
-                    const decodeResult = decodeBody(body, headers['content-type']);
+                    const bodyBuf = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
+                    // T7101: Use codec-based decoding (raw bytes)
+                    const decodeResult = decodeBody(bodyBuf, headers['content-type']);
                     if (!decodeResult.success) {
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec });
+                        const logEntry = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
+                        if (decodeResult.capViolation) {
+                            logEntry.capViolation = decodeResult.capViolation.reason;
+                            logEntry.capLimit = decodeResult.capViolation.limit;
+                            logEntry.capActual = decodeResult.capViolation.actual;
+                        }
+                        logJsonl(logEntry);
                         const durMs = Math.round(durNs / 1e6);
-                        recordMetrics(url.pathname, 400, durMs, body.length, 0);
+                        recordMetrics(url.pathname, 400, durMs, received, 0);
                         send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
                         return;
                     }
                     try {
                         const { to, envelope } = decodeResult.data;
                         client.enqueue(to, envelope).then(r => {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, codec: decodeResult.codec });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 200, codec: decodeResult.codec });
                             const durMs = Math.round(durNs / 1e6);
                             const outBytes = Buffer.byteLength(JSON.stringify(r));
-                            recordMetrics(url.pathname, 200, durMs, body.length, outBytes);
+                            recordMetrics(url.pathname, 200, durMs, received, outBytes);
                             send(res, 200, r);
                         }).catch(e => {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed', codec: decodeResult.codec });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed', codec: decodeResult.codec });
                             const durMs = Math.round(durNs / 1e6);
-                            recordMetrics(url.pathname, 400, durMs, body.length, 0);
+                            recordMetrics(url.pathname, 400, durMs, received, 0);
                             send(res, 400, { error: e?.detail || e?.message || 'bad request' });
                         });
                     }
                     catch (e) {
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_request', codec: decodeResult.codec });
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_request', codec: decodeResult.codec });
                         const durMs = Math.round(durNs / 1e6);
-                        recordMetrics(url.pathname, 400, durMs, body.length, 0);
+                        recordMetrics(url.pathname, 400, durMs, received, 0);
                         send(res, 400, { error: e?.message || 'invalid request' });
                     }
                 });
@@ -1244,14 +1297,26 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                     send(res, 503, { error: 'Queue backend not configured. Set CONDUIT_QUEUE_BACKEND=bullmq and CONDUIT_QUEUE_REDIS_URL.' });
                     return;
                 }
-                let body = '';
-                req.on('data', c => body += c);
+                const chunks = [];
+                let received = 0;
+                req.on('data', (c) => {
+                    const buf = Buffer.isBuffer(c) ? c : Buffer.from(c);
+                    chunks.push(buf);
+                    received += buf.length;
+                });
                 req.on('end', async () => {
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
                     // T7101: Use codec-based decoding
-                    const decodeResult = decodeBody(body, headers['content-type']);
+                    const bodyBuf = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
+                    const decodeResult = decodeBody(bodyBuf, headers['content-type']);
                     if (!decodeResult.success) {
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec });
+                        const logEntry = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
+                        if (decodeResult.capViolation) {
+                            logEntry.capViolation = decodeResult.capViolation.reason;
+                            logEntry.capLimit = decodeResult.capViolation.limit;
+                            logEntry.capActual = decodeResult.capViolation.actual;
+                        }
+                        logJsonl(logEntry);
                         send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
                         return;
                     }
@@ -1259,12 +1324,12 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                         const payload = decodeResult.data;
                         const { queue, message } = payload;
                         if (!queue) {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_queue', codec: decodeResult.codec });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_queue', codec: decodeResult.codec });
                             send(res, 400, { error: 'Missing required field: queue' });
                             return;
                         }
                         if (!message) {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_message', codec: decodeResult.codec });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_message', codec: decodeResult.codec });
                             send(res, 400, { error: 'Missing required field: message' });
                             return;
                         }
@@ -1277,8 +1342,8 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                             maxRetries: payload.maxRetries,
                             timeout: payload.timeout
                         });
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, ruleId: 'queue_enqueue', codec: decodeResult.codec });
-                        recordMetrics(url.pathname, 200, Math.round(durNs / 1e6), body.length, 0, 'queue_enqueue');
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 200, ruleId: 'queue_enqueue', codec: decodeResult.codec });
+                        recordMetrics(url.pathname, 200, Math.round(durNs / 1e6), received, 0, 'queue_enqueue');
                         send(res, 200, {
                             queueRef: {
                                 queueId: queueRef.jobId,
@@ -1291,7 +1356,7 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                         });
                     }
                     catch (e) {
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 500, error: 'queue_enqueue_failed', codec: decodeResult.codec });
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 500, error: 'queue_enqueue_failed', codec: decodeResult.codec });
                         send(res, 500, { error: e?.message || 'Queue enqueue failed' });
                     }
                 });
@@ -1301,8 +1366,8 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
             if (req.method === 'POST' && url.pathname === '/v1/upload') {
                 // T6110: Check per-tenant upload quota
                 if (tenantId) {
-                    const uploadQuota = tenantManager.canStartUpload(tenantId);
-                    if (!uploadQuota.allowed) {
+                    const canUpload = tenantManager.canStartUpload(tenantId);
+                    if (!canUpload) {
                         const durNs = Number(process.hrtime.bigint() - reqStartTime);
                         logJsonl({
                             ts: new Date().toISOString(),
@@ -1325,8 +1390,6 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                             error: 'Too Many Requests',
                             code: 'TenantUploadQuotaExceeded',
                             tenantId,
-                            current: uploadQuota.current,
-                            limit: uploadQuota.limit,
                             retryAfter: 10
                         }));
                         return;

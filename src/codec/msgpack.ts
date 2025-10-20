@@ -1,14 +1,18 @@
 import { Codec } from './types.js';
+import { createRequire } from 'module';
 
 let msgpack: any;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  msgpack = require('msgpackr');
-} catch {}
+  const req = createRequire(import.meta.url);
+  msgpack = req('msgpackr');
+} catch {
+  // msgpackr not available; codec will be reported as unavailable
+}
 
 export const msgpackCodec: Codec = {
   name: 'msgpack',
-  contentTypes: ['application/msgpack', 'application/x-msgpack'],
+  // Include standard + vendor media type; retain x- prefix for backward compatibility
+  contentTypes: ['application/msgpack', 'application/vnd.msgpack', 'application/x-msgpack'],
   isBinary: true,
   encode(obj: any): Uint8Array {
     if (!msgpack) throw new Error('msgpackr not available');
@@ -26,4 +30,3 @@ export async function createMsgPackCodec(): Promise<Codec | null> {
   if (!msgpack) return null;
   return msgpackCodec;
 }
-

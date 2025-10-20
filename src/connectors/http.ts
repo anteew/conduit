@@ -547,14 +547,15 @@ function normalizeHeaders(h: http.IncomingHttpHeaders): Record<string,string>{
 }
 
 // T7101: Decode request body using codec registry
-function decodeBody(body: string, contentType: string | undefined): { success: boolean; data?: any; error?: string; codec?: string; capViolation?: { reason: string; limit: number; actual: number } } {
-  const bodyBytes = Buffer.byteLength(body);
-  const guardrails = getGuardrailsFromEnv();
+function decodeBody(raw: Buffer, contentType: string | undefined): { success: boolean; data?: any; error?: string; codec?: string; capViolation?: { reason: string; limit: number; actual: number } } {
+  const bodyBytes = raw.length;
+  const guardrails = guardrailsConfig;
   
   if (!codecsHttpEnabled) {
     // Feature flag disabled, use JSON
     try {
-      const data = body ? JSON.parse(body) : {};
+      const s = raw.length ? raw.toString('utf8') : '';
+      const data = s ? JSON.parse(s) : {};
       return { success: true, data, codec: 'json' };
     } catch (e: any) {
       return { success: false, error: e.message || 'Invalid JSON', codec: 'json' };
@@ -567,7 +568,8 @@ function decodeBody(body: string, contentType: string | undefined): { success: b
   if (!codec) {
     // No codec detected, fallback to JSON
     try {
-      const data = body ? JSON.parse(body) : {};
+      const s = raw.length ? raw.toString('utf8') : '';
+      const data = s ? JSON.parse(s) : {};
       recordCodecMetrics('decode', 'json', true, bodyBytes);
       
       // T7120: Check decoded payload size and depth caps
@@ -590,7 +592,7 @@ function decodeBody(body: string, contentType: string | undefined): { success: b
   
   // Decode with detected codec
   try {
-    const data = codec.decode(body);
+    const data = codec.decode(raw);
     recordCodecMetrics('decode', codec.name, true, bodyBytes);
     
     // T7120: Check decoded payload size and depth caps
@@ -887,10 +889,12 @@ async function handleWithDSL(client: PipeClient, req: http.IncomingMessage, res:
     }
   }
   
-  let body = '';
+  const chunks: Buffer[] = [];
   let received = 0;
   for await (const chunk of requestStream) {
-    received += (chunk as Buffer).length;
+    const buf = Buffer.from(chunk as Buffer);
+    received += buf.length;
+    chunks.push(buf);
     if (received > sizeLimit) {
       const durNs = Number(process.hrtime.bigint() - startTime);
       if (isJSON) {
@@ -935,11 +939,12 @@ async function handleWithDSL(client: PipeClient, req: http.IncomingMessage, res:
       req.resume();
       return true;
     }
-    body += chunk;
+    // preserve raw bytes in chunks
   }
 
   // T7101: Use codec-based body decoding
-  const decodeResult = decodeBody(body, headers['content-type']);
+  const rawBody = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
+  const decodeResult = decodeBody(rawBody, headers['content-type']);
   if (!decodeResult.success) {
     const durNs = Number(process.hrtime.bigint() - startTime);
     
@@ -1177,11 +1182,11 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
     
     // T6110: Tenant quota enforcement (rate limits)
     if (tenantId) {
-      const rateLimitResult = tenantManager.checkRateLimit(tenantId);
-      if (!rateLimitResult.allowed) {
+      const rateAllowed = tenantManager.checkRateLimit(tenantId);
+      if (!rateAllowed) {
         activeGlobalConnections--;
         const durNs = Number(process.hrtime.bigint() - reqStartTime);
-        const retryAfter = rateLimitResult.retryAfter || 60;
+        const retryAfter = 60;
         
         logJsonl({
           ts: new Date().toISOString(),
@@ -1372,13 +1377,21 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
         return;
       }
       if(req.method==='POST' && url.pathname==='/v1/enqueue'){
-        let body=''; req.on('data',c=>body+=c); req.on('end',()=>{
+        const chunks: Buffer[] = [];
+        let received = 0;
+        req.on('data',(c:any)=>{
+          const buf = Buffer.isBuffer(c) ? c : Buffer.from(c);
+          chunks.push(buf);
+          received += buf.length;
+        });
+        req.on('end',()=>{
           const durNs = Number(process.hrtime.bigint() - reqStartTime);
+          const bodyBuf = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
           
-          // T7101: Use codec-based decoding
-          const decodeResult = decodeBody(body, headers['content-type']);
+          // T7101: Use codec-based decoding (raw bytes)
+          const decodeResult = decodeBody(bodyBuf, headers['content-type']);
           if (!decodeResult.success) {
-            const logEntry: any = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
+            const logEntry: any = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
             if (decodeResult.capViolation) {
               logEntry.capViolation = decodeResult.capViolation.reason;
               logEntry.capLimit = decodeResult.capViolation.limit;
@@ -1386,7 +1399,7 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
             }
             logJsonl(logEntry);
             const durMs = Math.round(durNs / 1e6);
-            recordMetrics(url.pathname, 400, durMs, body.length, 0);
+            recordMetrics(url.pathname, 400, durMs, received, 0);
             send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
             return;
           }
@@ -1394,21 +1407,21 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
           try{
             const {to,envelope}=decodeResult.data;
             client.enqueue(to,envelope).then(r=>{
-              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, codec: decodeResult.codec });
+              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 200, codec: decodeResult.codec });
               const durMs = Math.round(durNs / 1e6);
               const outBytes = Buffer.byteLength(JSON.stringify(r));
-              recordMetrics(url.pathname, 200, durMs, body.length, outBytes);
+              recordMetrics(url.pathname, 200, durMs, received, outBytes);
               send(res,200,r);
             }).catch(e=>{
-              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed', codec: decodeResult.codec });
+              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed', codec: decodeResult.codec });
               const durMs = Math.round(durNs / 1e6);
-              recordMetrics(url.pathname, 400, durMs, body.length, 0);
+              recordMetrics(url.pathname, 400, durMs, received, 0);
               send(res,400,{error:e?.detail||e?.message||'bad request'});
             });
           }catch(e:any){
-            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_request', codec: decodeResult.codec });
+            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_request', codec: decodeResult.codec });
             const durMs = Math.round(durNs / 1e6);
-            recordMetrics(url.pathname, 400, durMs, body.length, 0);
+            recordMetrics(url.pathname, 400, durMs, received, 0);
             send(res,400,{error:e?.message||'invalid request'});
           }
         });
@@ -1424,13 +1437,21 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
           return;
         }
         
-        let body=''; req.on('data',c=>body+=c); req.on('end',async ()=>{
+        const chunks: Buffer[] = [];
+        let received = 0;
+        req.on('data',(c:any)=>{
+          const buf = Buffer.isBuffer(c) ? c : Buffer.from(c);
+          chunks.push(buf);
+          received += buf.length;
+        });
+        req.on('end',async ()=>{
           const durNs = Number(process.hrtime.bigint() - reqStartTime);
           
           // T7101: Use codec-based decoding
-          const decodeResult = decodeBody(body, headers['content-type']);
+          const bodyBuf = chunks.length ? Buffer.concat(chunks, received) : Buffer.alloc(0);
+          const decodeResult = decodeBody(bodyBuf, headers['content-type']);
           if (!decodeResult.success) {
-            const logEntry: any = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
+            const logEntry: any = { ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec };
             if (decodeResult.capViolation) {
               logEntry.capViolation = decodeResult.capViolation.reason;
               logEntry.capLimit = decodeResult.capViolation.limit;
@@ -1446,13 +1467,13 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
             const { queue, message } = payload;
             
             if (!queue) {
-              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_queue', codec: decodeResult.codec });
+              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_queue', codec: decodeResult.codec });
               send(res, 400, { error: 'Missing required field: queue' });
               return;
             }
             
             if (!message) {
-              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_message', codec: decodeResult.codec });
+              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_message', codec: decodeResult.codec });
               send(res, 400, { error: 'Missing required field: message' });
               return;
             }
@@ -1467,8 +1488,8 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
               timeout: payload.timeout
             });
             
-            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, ruleId: 'queue_enqueue', codec: decodeResult.codec });
-            recordMetrics(url.pathname, 200, Math.round(durNs / 1e6), body.length, 0, 'queue_enqueue');
+            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 200, ruleId: 'queue_enqueue', codec: decodeResult.codec });
+            recordMetrics(url.pathname, 200, Math.round(durNs / 1e6), received, 0, 'queue_enqueue');
             
             send(res, 200, {
               queueRef: {
@@ -1481,7 +1502,7 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
               }
             });
           }catch(e:any){
-            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 500, error: 'queue_enqueue_failed', codec: decodeResult.codec });
+            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: received, durMs: Math.round(durNs / 1e6), status: 500, error: 'queue_enqueue_failed', codec: decodeResult.codec });
             send(res, 500, { error: e?.message || 'Queue enqueue failed' });
           }
         });
@@ -1492,8 +1513,8 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
       if(req.method==='POST' && url.pathname==='/v1/upload'){
         // T6110: Check per-tenant upload quota
         if (tenantId) {
-          const uploadQuota = tenantManager.canStartUpload(tenantId);
-          if (!uploadQuota.allowed) {
+          const canUpload = tenantManager.canStartUpload(tenantId);
+          if (!canUpload) {
             const durNs = Number(process.hrtime.bigint() - reqStartTime);
             logJsonl({
               ts: new Date().toISOString(),
@@ -1518,8 +1539,6 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
               error: 'Too Many Requests',
               code: 'TenantUploadQuotaExceeded',
               tenantId,
-              current: uploadQuota.current,
-              limit: uploadQuota.limit,
               retryAfter: 10
             }));
             return;
@@ -2161,3 +2180,5 @@ export async function makeClientWithTerminal(config: TerminalConfig, rec?: (f:an
   await client.hello();
   return client;
 }
+// Cache guardrails once (env-driven). Can be refreshed on process reload if needed.
+const guardrailsConfig = getGuardrailsFromEnv();
