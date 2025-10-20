@@ -504,8 +504,8 @@ function getMetricsSummary() {
       decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec),
       sizeCapViolations: Object.fromEntries(codecMetrics.sizeCapViolations),
       depthCapViolations: Object.fromEntries(codecMetrics.depthCapViolations),
-      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return [k,{p50,p95,count:a.length}]; })),
-      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return [k,{p50,p95,count:a.length}]; }))
+      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; const p99=a[Math.floor(a.length*0.99)]||0; return [k,{p50,p95,p99,count:a.length}]; })),
+      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; const p99=a[Math.floor(a.length*0.99)]||0; return [k,{p50,p95,p99,count:a.length}]; }))
     };
   }
   
