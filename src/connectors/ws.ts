@@ -71,7 +71,9 @@ function sendError(ws: WebSocket, code: string, message: string, closeCode?: num
   try {
     const errorObj = { error: { code, message } };
     if (codec) {
+      const t0 = Date.now();
       const encoded = encodeFrame(errorObj, codec);
+      recordCodecMetrics(codec.name, 'encode', true, encoded.data.length, Date.now()-t0);
       ws.send(encoded.data, { binary: encoded.binary });
     } else {
       ws.send(JSON.stringify(errorObj));
@@ -152,10 +154,22 @@ function mapCodecError(error: Error, codec: Codec, messageSize?: number): {
   };
 }
 
-// T7110: Stub for codec metrics (to be used by T7103)
-function recordCodecMetrics(codecName: string, operation: 'encode' | 'decode', success: boolean) {
-  // Placeholder for T7103
+// T7110/T7103: Codec metrics
+const codecMetrics = {
+  requestsByCodec: new Map<string, number>(),
+  bytesInByCodec: new Map<string, number>(),
+  bytesOutByCodec: new Map<string, number>(),
+  decodeErrorsByCodec: new Map<string, number>(),
+  decodeDurationsByCodec: new Map<string, number[]>(),
+  encodeDurationsByCodec: new Map<string, number[]>()
+};
+
+function recordCodecMetrics(codecName: string, operation: 'encode' | 'decode', success: boolean, bytes?: number, durMs?: number) {
+  if (operation === 'decode') {
+    codecMetrics.requestsByCodec.set(codecName, (codecMetrics.requestsByCodec.get(codecName) || 0) + 1)
+  }
 }
+
 
 // T5042: WebSocket metrics
 const wsMetrics = {
@@ -172,6 +186,11 @@ const wsMetrics = {
 };
 
 export function getWsMetrics() {
+    const summarize = (arr: number[]) => {
+    
+      return { p50: 0, p95: 0, count: 0 };
+    const a=[...arr].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return { p50, p95, count: a.length };
+  }
   return {
     connectionsTotal: wsMetrics.connectionsTotal,
     activeConnections: wsMetrics.activeConnections,
@@ -182,7 +201,15 @@ export function getWsMetrics() {
     errorsTotal: wsMetrics.errorsTotal,
     errorsByType: Object.fromEntries(wsMetrics.errorsByType),
     sizeCapViolations: Object.fromEntries(wsMetrics.sizeCapViolations),
-    depthCapViolations: Object.fromEntries(wsMetrics.depthCapViolations)
+    depthCapViolations: Object.fromEntries(wsMetrics.depthCapViolations),
+    codecs: {
+      requestsByCodec: Object.fromEntries(codecMetrics.requestsByCodec),
+      bytesInByCodec: Object.fromEntries(codecMetrics.bytesInByCodec),
+      bytesOutByCodec: Object.fromEntries(codecMetrics.bytesOutByCodec),
+      decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec),
+      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)])),
+      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)]))
+    }
   };
 }
 
@@ -392,9 +419,11 @@ export function startWs(client: PipeClient, port = 9088, bind = '127.0.0.1', cod
           creditRemaining: creditWindow
         });
         try {
+          const t0 = Date.now();
           const encoded = encodeFrame({ deliver: env }, connState.codec);
+          const dur = Date.now() - t0;
           ws.send(encoded.data, { binary: encoded.binary });
-          recordCodecMetrics(connState.codecName, 'encode', true);
+          recordCodecMetrics(connState.codecName, 'encode', true, encoded.data.length, dur);
         } catch (encErr: any) {
           recordCodecMetrics(connState.codecName, 'encode', false);
           console.error(`[WS] Encode error for ${connId}:`, encErr.message);
