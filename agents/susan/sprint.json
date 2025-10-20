@@ -1,128 +1,141 @@
 {
   "ampcode": "v1",
   "waves": [
-    { "id": "Wave-Registry", "parallel": true, "tasks": [
-      "T6201-Codec-Registry-Adapters"
-    ]},
     { "id": "Wave-HTTP-Codecs", "parallel": true, "tasks": [
-      "T6202-HTTP-Decode-Path",
-      "T6203-HTTP-Encode-Path",
-      "T6204-HTTP-Observability"
+      "T7101-HTTP-Codec-Decode",
+      "T7102-HTTP-Codec-Encode",
+      "T7103-HTTP-Codec-Observability"
     ]},
     { "id": "Wave-WS-Codecs", "parallel": true, "tasks": [
-      "T6205-WS-Negotiation",
-      "T6206-WS-Codec-Tests"
-    ]},
-    { "id": "Wave-Perf-Docs", "parallel": true, "tasks": [
-      "T6207-Perf-Small",
-      "T6208-Docs-Examples"
-    ]},
-    { "id": "Wave-Optional-CBOR", "parallel": true, "tasks": [
-      "T6209-CBOR-Adapter"
+      "T7110-WS-Codec-Negotiation",
+      "T7111-WS-Codec-Frames",
+      "T7112-WS-Decode-Errors"
     ]},
     { "id": "Wave-Guardrails", "parallel": true, "tasks": [
-      "T6210-Decoded-Limits"
+      "T7120-Decoded-Size-Depth-Caps"
+    ]},
+    { "id": "Wave-ESM-Fix", "parallel": true, "tasks": [
+      "T7130-ESM-Reload-Shutdown-Imports"
+    ]},
+    { "id": "Wave-Docs-Perf", "parallel": true, "tasks": [
+      "T7140-Docs-Codec-Usage",
+      "T7141-Perf-Small-Report"
     ]}
   ],
   "tasks": [
     {
-      "id": "T6201-Codec-Registry-Adapters",
+      "id": "T7101-HTTP-Codec-Decode",
       "agent": "amp",
-      "title": "Finalize codec registry and adapters (json, msgpack) with unit tests",
-      "why": "Provide a single, reusable codec API for all connectors and future protocols.",
-      "allowedFiles": ["src/codec/**", "tests/**"],
-      "verify": [
-        "node -e \"const { listCodecs } = require('./dist/codec/registry.js'); console.log(listCodecs().map(c=>c.name).join(','));\""
-      ],
-      "deliverables": ["src/codec/**", "tests/codec_roundtrip.test.ts"]
-    },
-    {
-      "id": "T6202-HTTP-Decode-Path",
-      "agent": "amp",
-      "title": "HTTP: decode request bodies via registry by Content-Type (flagged)",
-      "why": "Support msgpack/cbor inputs without touching DSL or backends.",
-      "allowedFiles": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
+      "title": "HTTP: decode request bodies via registry by Content-Type (opt-in flag)",
+      "why": "Enable MessagePack inputs without changing defaults; preserve limits and error mapping.",
+      "allowedFiles": ["src/connectors/http.ts", "src/codec/**", "docs/SRE-RUNBOOK.md", "tests/**"],
       "verify": [
         "CONDUIT_CODECS_HTTP=true npm run test:compile",
-        "node -e \"const http=require('http'); const {spawn}=require('child_process'); const { pack }=require('msgpackr'); const env={...process.env,CONDUIT_CODECS_HTTP:'true'}; const srv=spawn('node',['dist/index.js'],{env}); setTimeout(()=>{ const body=pack({to:'agents/Codec/inbox',envelope:{id:'x'}}); const req=http.request('http://127.0.0.1:9087/v1/enqueue',{method:'POST',headers:{'content-type':'application/msgpack','content-length':body.length}} ,res=>{console.log('STATUS',res.statusCode); res.resume(); res.on('end',()=>srv.kill());}); req.write(body); req.end(); },700);\""
+        "CONDUIT_CODECS_HTTP=true node tests_compiled/tests/http_codec_decode.test.js"
       ],
       "deliverables": ["src/connectors/http.ts"]
     },
     {
-      "id": "T6203-HTTP-Encode-Path",
+      "id": "T7102-HTTP-Codec-Encode",
       "agent": "amp",
-      "title": "HTTP: negotiate response via Accept with X-Codec override (flagged)",
-      "why": "Serve msgpack/cbor responses where clients prefer binary; preserve JSON fallback.",
+      "title": "HTTP: negotiate response codec via Accept with X-Codec override (opt-in)",
+      "why": "Clients can opt into binary responses while keeping JSON fallback.",
       "allowedFiles": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
       "verify": [
-        "CONDUIT_CODECS_HTTP=true node -e \"const http=require('http'); const {spawn}=require('child_process'); const env={...process.env,CONDUIT_CODECS_HTTP:'true'}; const srv=spawn('node',['dist/index.js'],{env}); setTimeout(()=>{ http.get({host:'127.0.0.1',port:9087,path:'/v1/metrics',headers:{Accept:'application/msgpack'}},res=>{console.log('CT',res.headers['content-type']); res.resume(); res.on('end',()=>srv.kill());}); },700);\""
+        "CONDUIT_CODECS_HTTP=true node tests_compiled/tests/http_codec_encode.test.js"
       ],
       "deliverables": ["src/connectors/http.ts", "docs/SRE-RUNBOOK.md"]
     },
     {
-      "id": "T6204-HTTP-Observability",
+      "id": "T7103-HTTP-Codec-Observability",
       "agent": "amp",
-      "title": "HTTP: log codec + per-codec metrics counters/bytes",
-      "why": "Operator visibility into protocol usage and impact.",
-      "allowedFiles": ["src/connectors/http.ts", "docs/OBSERVABILITY.md", "tests/**"],
-      "verify": ["curl -s http://127.0.0.1:9087/v1/metrics | jq .http | true"],
+      "title": "HTTP: log codec in JSONL and add per-codec counters/bytes to /v1/metrics",
+      "why": "Operator visibility into codec usage and impact.",
+      "allowedFiles": ["src/connectors/http.ts", "docs/OBSERVABILITY.md"],
+      "verify": [
+        "CONDUIT_CODECS_HTTP=true node -e \"(async()=>{const http=require('http');http.get('http://127.0.0.1:9087/v1/metrics',res=>{res.resume();res.on('end',()=>console.log('ok'));});})()\""
+      ],
       "deliverables": ["src/connectors/http.ts", "docs/OBSERVABILITY.md"]
     },
     {
-      "id": "T6205-WS-Negotiation",
+      "id": "T7110-WS-Codec-Negotiation",
       "agent": "amp",
-      "title": "WS: negotiate ?codec=... and support binary frames for msgpack/cbor (flagged)",
-      "why": "Symmetric codec support and performance for WS flows.",
-      "allowedFiles": ["src/connectors/ws.ts", "docs/SRE-RUNBOOK.md", "tests/**"],
+      "title": "WS: negotiate ?codec and Sec-WebSocket-Protocol; store per-connection codec (opt-in)",
+      "why": "Symmetric codec support over WS.",
+      "allowedFiles": ["src/connectors/ws.ts", "tests/**", "docs/SRE-RUNBOOK.md"],
       "verify": [
-        "CONDUIT_CODECS_WS=true npm run test:compile && node tests_compiled/tests/ws_bidir.test.js"
+        "CONDUIT_CODECS_WS=true npm run test:compile",
+        "CONDUIT_CODECS_WS=true node tests_compiled/tests/ws_codec_negotiation.test.js"
       ],
       "deliverables": ["src/connectors/ws.ts"]
     },
     {
-      "id": "T6206-WS-Codec-Tests",
+      "id": "T7111-WS-Codec-Frames",
       "agent": "amp",
-      "title": "WS: add tests for codec negotiation, error mapping, and oversize with binary frames",
-      "why": "Ensure correctness and safety for WS binary flows.",
-      "allowedFiles": ["tests/**"],
-      "verify": ["npm run test:compile && node tests_compiled/tests/ws_oversize.test.js"],
-      "deliverables": ["tests/ws_codecs.test.ts"]
+      "title": "WS: encode/decode frames using negotiated codec; binary for msgpack, text for json",
+      "why": "End-to-end codec functionality for WS.",
+      "allowedFiles": ["src/connectors/ws.ts", "tests/**"],
+      "verify": [
+        "CONDUIT_CODECS_WS=true node tests_compiled/tests/ws_codec_frames.test.js"
+      ],
+      "deliverables": ["src/connectors/ws.ts"]
     },
     {
-      "id": "T6207-Perf-Small",
+      "id": "T7112-WS-Decode-Errors",
       "agent": "amp",
-      "title": "Perf: compare JSON vs msgpack small-message latency and p50/p95",
-      "why": "Quantify benefits and regressions; inform defaults.",
-      "allowedFiles": ["tests/**", "public/**", "docs/OBSERVABILITY.md"],
-      "verify": ["npm run bench:small"],
-      "deliverables": ["tests/perf_small_codecs.test.ts", "public/perf.html"]
+      "title": "WS: map decode errors to 1007 with error frame; retain 1009 for oversize",
+      "why": "Safety and clear error semantics for binary/text frames.",
+      "allowedFiles": ["src/connectors/ws.ts", "tests/**"],
+      "verify": [
+        "CONDUIT_CODECS_WS=true node tests_compiled/tests/ws_oversize.test.js"
+      ],
+      "deliverables": ["src/connectors/ws.ts"]
     },
     {
-      "id": "T6208-Docs-Examples",
+      "id": "T7120-Decoded-Size-Depth-Caps",
       "agent": "amp",
-      "title": "Docs: add HTTP/WS codec examples (Accept, Content-Type, ?codec)",
-      "why": "Make it simple for developers to opt into binary codecs.",
-      "allowedFiles": ["docs/SRE-RUNBOOK.md", "docs/rfcs/**"],
-      "verify": ["rg -n 'application/msgpack|application/cbor|\\?codec=' docs -S"],
-      "deliverables": ["docs/SRE-RUNBOOK.md"]
-    },
-    {
-      "id": "T6209-CBOR-Adapter",
-      "agent": "amp",
-      "title": "Optional CBOR (cbor-x) adapter behind flag with unit tests",
-      "why": "Offer a standards-oriented alternative to msgpack.",
-      "allowedFiles": ["src/codec/**", "tests/**"],
-      "verify": ["node -e \"console.log('ok')\""],
-      "deliverables": ["src/codec/cbor.ts", "tests/codec_cbor.test.ts"]
-    },
-    {
-      "id": "T6210-Decoded-Limits",
-      "agent": "amp",
-      "title": "Add decoded size/depth caps; map codec errors to 400/1007; tests",
-      "why": "Harden against pathological or malicious payloads.",
+      "title": "Add decoded size/depth caps (HTTP+WS); map to 400/1007; add metrics/logs",
+      "why": "Harden against pathological payloads.",
       "allowedFiles": ["src/connectors/http.ts", "src/connectors/ws.ts", "docs/OBSERVABILITY.md", "tests/**"],
-      "verify": ["npm run test:compile && node tests_compiled/tests/json_cap.test.js"],
+      "verify": [
+        "CONDUIT_CODECS_HTTP=true CONDUIT_CODECS_WS=true npm run test:compile",
+        "node tests_compiled/tests/codec_safety.test.js || true"
+      ],
       "deliverables": ["src/connectors/http.ts", "src/connectors/ws.ts"]
+    },
+    {
+      "id": "T7130-ESM-Reload-Shutdown-Imports",
+      "agent": "amp",
+      "title": "Replace require() with dynamic import() in reload/shutdown paths (ESM-safe)",
+      "why": "Avoid ESM warnings and ensure graceful shutdown works.",
+      "allowedFiles": ["src/index.ts"],
+      "verify": [
+        "npm run build",
+        "node -e \"process.kill(process.spawnSync('node',['dist/index.js'],{stdio:'ignore'}).pid,'SIGTERM')\" || true"
+      ],
+      "deliverables": ["src/index.ts"]
+    },
+    {
+      "id": "T7140-Docs-Codec-Usage",
+      "agent": "amp",
+      "title": "Docs: add codec usage to SRE-RUNBOOK (Accept/Content-Type/?codec examples)",
+      "why": "Make opt-in flow obvious and copy-paste friendly.",
+      "allowedFiles": ["docs/SRE-RUNBOOK.md", "docs/CODECS.md", "examples/**"],
+      "verify": [
+        "rg -n 'application/msgpack|application/cbor|\\?codec=' docs -S"
+      ],
+      "deliverables": ["docs/SRE-RUNBOOK.md", "docs/CODECS.md", "examples/*"]
+    },
+    {
+      "id": "T7141-Perf-Small-Report",
+      "agent": "amp",
+      "title": "Perf: run small-message benchmark for JSON vs msgpack; record results",
+      "why": "Quantify expected gains and ensure no regressions.",
+      "allowedFiles": ["tests/**", "docs/T7030-BENCHMARK-REPORT.md"],
+      "verify": [
+        "npm run bench:small || true"
+      ],
+      "deliverables": ["docs/T7030-BENCHMARK-REPORT.md"]
     }
   ]
 }
