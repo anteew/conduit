@@ -5,12 +5,32 @@
 import * as http from 'http';
 import { msgpackCodec } from '../src/codec/msgpack.js';
 
+interface HttpRequestOptions {
+  method: string;
+  path: string;
+  headers?: Record<string, string>;
+  body?: Buffer | string;
+}
+
+interface HttpResponse {
+  status: number;
+  headers: http.IncomingHttpHeaders;
+  body: Buffer;
+}
+
 const PORT = 9787;
 
-function httpRequest(opts: { method: string; path: string; headers?: Record<string,string>; body?: Buffer|string }): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: Buffer }>{
+function httpRequest(opts: HttpRequestOptions): Promise<HttpResponse> {
   return new Promise((resolve, reject) => {
     const req = http.request({ hostname: '127.0.0.1', port: PORT, method: opts.method, path: opts.path, headers: opts.headers||{} }, (res)=>{
-      const chunks: Buffer[] = []; res.on('data', (c)=>chunks.push(Buffer.isBuffer(c)?c:Buffer.from(c)));
+      const chunks: Buffer[] = [];
+      res.on('data', (c) => {
+        if (Buffer.isBuffer(c)) {
+          chunks.push(c);
+        } else {
+          chunks.push(Buffer.from(c));
+        }
+      });
       res.on('end', ()=> resolve({ status: res.statusCode||0, headers: res.headers, body: Buffer.concat(chunks) }));
     });
     req.on('error', reject);
@@ -56,7 +76,7 @@ async function run(){
         } else {
           throw new Error('no queueRef');
         }
-      } catch {
+      } catch (e:any) {
         console.error('✗ JSON fallback invalid for /v1/queue');
         failed++;
       }
