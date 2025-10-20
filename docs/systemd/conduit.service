@@ -14,11 +14,10 @@ Environment=CONDUIT_RULES=config/rules.yaml
 Environment=CONDUIT_CODECS_HTTP=true
 Environment=CONDUIT_CODECS_WS=true
 Environment=CONDUIT_TOKENS=dev-local
-ExecStart=/usr/bin/node --loader ts-node/esm src/index.ts
+ExecStart=/usr/bin/node dist/index.js
 Restart=on-failure
 RestartSec=3
 LimitNOFILE=65535
 
 [Install]
 WantedBy=multi-user.target
-

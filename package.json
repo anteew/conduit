@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --loader ts-node/esm src/index.ts",
     "build": "tsc -p .",
+    "start:dist": "node dist/index.js",
     "test:compile": "tsc tests/*.test.ts tests/harness.ts --module ES2022 --target ES2022 --moduleResolution Node --allowSyntheticDefaultImports --outDir tests_compiled",
     "test:unit": "npm run test:compile && node tests_compiled/http_bidir.test.js",
     "test:int": "npm run test:compile && node tests_compiled/ws_bidir.test.js",
