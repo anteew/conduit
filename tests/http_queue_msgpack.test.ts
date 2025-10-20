@@ -48,7 +48,18 @@ async function run(){
       }
     } else if (ct.includes('application/json')) {
       // Acceptable fallback when msgpack not available
-      try { const obj = JSON.parse(res.body.toString()); if (obj && obj.queueRef) { console.log('⊙ /v1/queue fell back to JSON (acceptable)'); passed++; } else { throw new Error('no queueRef'); } } catch { console.error('✗ JSON fallback invalid for /v1/queue'); failed++; }
+      try {
+        const obj = JSON.parse(res.body.toString());
+        if (obj && obj.queueRef) {
+          console.log('⊙ /v1/queue fell back to JSON (acceptable)');
+          passed++;
+        } else {
+          throw new Error('no queueRef');
+        }
+      } catch {
+        console.error('✗ JSON fallback invalid for /v1/queue');
+        failed++;
+      }
     } else {
       console.error('✗ Unexpected Content-Type for /v1/queue:', ct);
       failed++;
