@@ -205,7 +205,13 @@ function send(res: http.ServerResponse, code: number, body: any, idempotencyKey?
   try {
     const t0 = Date.now();
     const encoded = codec.encode(body);
-    pushDuration(codecMetrics.encodeDurationsByCodec, codec.name, Date.now()-t0);
+    {
+      const d = Date.now() - t0;
+      const arr = codecMetrics.encodeDurationsByCodec.get(codec.name) || [];
+      arr.push(d);
+      if (arr.length > 1000) arr.shift();
+      codecMetrics.encodeDurationsByCodec.set(codec.name, arr);
+    }
     const encodedBytes = encoded.length;
     res.writeHead(code, {'content-type': codec.contentTypes[0] || 'application/json'});
     res.end(encoded);
@@ -410,6 +416,7 @@ function recordCodecMetrics(operation: 'decode' | 'encode', codec: string, succe
     }
   }
 
+
 function pushDuration(map: Map<string, number[]>, key: string, durMs: number, cap=1000) {
   const arr = map.get(key) || [];
   arr.push(durMs);
@@ -424,8 +431,6 @@ function summarize(arr: number[]) {
   const p95 = a[Math.floor(a.length*0.95)] || 0;
   return { p50, p95, count: a.length };
 }
-
-
 }
 
 // Placeholder for WS metrics (populated by ws.ts)
@@ -499,8 +504,8 @@ function getMetricsSummary() {
       decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec),
       sizeCapViolations: Object.fromEntries(codecMetrics.sizeCapViolations),
       depthCapViolations: Object.fromEntries(codecMetrics.depthCapViolations),
-      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)])),
-      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>[k, summarize(v)]))
+      decodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.decodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return [k,{p50,p95,count:a.length}]; })),
+      encodeLatencyMs: Object.fromEntries(Array.from(codecMetrics.encodeDurationsByCodec.entries()).map(([k,v])=>{ const a=[...v].sort((x,y)=>x-y); const p50=a[Math.floor(a.length*0.5)]||0; const p95=a[Math.floor(a.length*0.95)]||0; return [k,{p50,p95,count:a.length}]; }))
     };
   }
   
@@ -617,7 +622,13 @@ function decodeBody(raw: Buffer, contentType: string | undefined): { success: bo
   try {
   const t0 = Date.now();
     const data = codec.decode(raw);
-    pushDuration(codecMetrics.decodeDurationsByCodec, codec.name, Date.now()-t0);
+    {
+      const d = Date.now() - t0;
+      const arr = codecMetrics.decodeDurationsByCodec.get(codec.name) || [];
+      arr.push(d);
+      if (arr.length > 1000) arr.shift();
+      codecMetrics.decodeDurationsByCodec.set(codec.name, arr);
+    }
     recordCodecMetrics('decode', codec.name, true, bodyBytes);
     
     // T7120: Check decoded payload size and depth caps
@@ -1641,8 +1652,65 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
           }
         };
         
-        const contentType = req.headers['content-type'] || '';
-        if (!contentType.includes('multipart/form-data')) {
+        const contentType = (req.headers['content-type'] || '').split(';')[0].trim();
+        if (contentType === 'application/octet-stream') {
+          try {
+            if (!blobSink) {
+              cleanupUpload();
+              const durNs = Number(process.hrtime.bigint() - reqStartTime);
+              logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 503, error: 'blob_backend_not_configured' });
+              send(res, 503, { error: 'Blob backend not configured' });
+              return;
+            }
+            const passThrough = new PassThrough();
+            const hashStream = crypto.createHash('sha256');
+            let total = 0;
+            const started = process.hrtime.bigint();
+            const filename = headers['x-filename'] || `upload-${Date.now()}.bin`;
+            const storePromise = blobSink.store(passThrough, { filename, mime: contentType, clientIp: reqIp, tags: {} });
+            const sync = process.env.CONDUIT_UPLOAD_SYNC === 'true' || (headers['x-upload-mode']||'').toLowerCase() === 'sync';
+            if (!sync) {
+              res.writeHead(202, { 'content-type': 'application/json' });
+              res.end(JSON.stringify({ ok: true }));
+            }
+            req.on('data', (chunk: Buffer) => {
+              total += chunk.length;
+              hashStream.update(chunk);
+              passThrough.write(chunk);
+            });
+            req.on('end', async () => {
+              try { passThrough.end(); } catch {}
+              const sha256 = hashStream.digest('hex');
+              const durNs = Number(process.hrtime.bigint() - started);
+              const secs = durNs / 1e9;
+              const mb = total / 1048576;
+              const rate = secs > 0 ? (mb / secs) : 0;
+              try {
+                const blobRef = await storePromise;
+                logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: total, durMs: Math.round(durNs / 1e6), rateMBps: parseFloat(rate.toFixed(2)), status: sync ? 200 : 202, sha256, mime: blobRef.mime, size: blobRef.size });
+                recordMetrics(url.pathname, sync ? 200 : 202, Math.round(durNs / 1e6), total, 0);
+                if (sync) send(res, 200, { blobRef });
+              } catch (err: any) {
+                logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 500, error: 'blob_storage_failed' });
+                if (sync) send(res, 500, { error: 'Blob storage failed', details: err.message });
+              } finally {
+                cleanupUpload();
+              }
+            });
+            req.on('error', (err) => {
+              passThrough.destroy(err as any);
+            });
+            req.resume();
+            return;
+          } catch (err: any) {
+            cleanupUpload();
+            const durNs = Number(process.hrtime.bigint() - reqStartTime);
+            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 500, error: 'internal_error' });
+            send(res, 500, { error: err.message || 'Internal error' });
+            return;
+          }
+        }
+        if (!((req.headers['content-type'] || '').includes('multipart/form-data'))) {
           cleanupUpload();
           const durNs = Number(process.hrtime.bigint() - reqStartTime);
           logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 400, error: 'expected_multipart' });
