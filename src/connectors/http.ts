@@ -1119,6 +1119,36 @@ export function startHttp(client: PipeClient, port=9087, bind='127.0.0.1'){
       activeGlobalConnections--;
     });
     
+    // T6111: Per-tenant request rate limit
+    if (tenantId) {
+      const allowed = tenantManager.checkRateLimit(tenantId);
+      if (!allowed) {
+        const durNs = Number(process.hrtime.bigint() - reqStartTime);
+        tenantManager.trackError(tenantId);
+        logJsonl({
+          ts: new Date().toISOString(),
+          event: 'http_tenant_rate_limited',
+          ip: reqIp,
+          method: req.method,
+          path: reqUrl.pathname,
+          tenantId,
+          status: 429
+        });
+        res.writeHead(429, {
+          'content-type': 'application/json',
+          'retry-after': '60'
+        });
+        res.end(JSON.stringify({
+          error: 'Too Many Requests',
+          code: 'TenantRateLimitExceeded',
+          tenantId,
+          retryAfter: 60
+        }));
+        recordMetrics(reqUrl.pathname, 429, Math.round(durNs/1e6), 0, 0, undefined, tenantId);
+        return;
+      }
+    }
+
     // T5033: Check header size limits
     const rawHeaders = req.rawHeaders;
     let totalHeaderSize = 0;
