@@ -104,6 +104,14 @@ function mapCodecError(error: Error, codec: Codec, messageSize?: number): {
   closeCode: number 
 } {
   const errorMsg = error.message.toLowerCase();
+  // Prefer error type checks when available
+  if (error instanceof SyntaxError) {
+    return {
+      code: 'InvalidJSON',
+      message: error.message,
+      closeCode: 1007
+    };
+  }
   
   // Check for oversize errors - these get 1009 Message Too Big
   if (errorMsg.includes('too large') || 
@@ -216,6 +224,8 @@ export function startWs(client: PipeClient, port = 9088, bind = '127.0.0.1', cod
   }
   
   const wss = new WebSocketServer({ port, host: bind });
+  // Cache guardrails for this process (avoid repeated env parsing)
+  const guardrailsCached = getGuardrailsFromEnv();
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
     const connId = generateConnId();
     const connStartTime = Date.now();
@@ -467,8 +477,7 @@ export function startWs(client: PipeClient, port = 9088, bind = '127.0.0.1', cod
         }
         
         // T7120: Check decoded payload size and depth caps
-        const guardrails = getGuardrailsFromEnv();
-        const check = checkDecodedPayload(msg, guardrails);
+        const check = checkDecodedPayload(msg, guardrailsCached);
         if (check.valid === false) {
           wsMetrics.errorsTotal++;
           const errorCode = check.reason === 'decoded_size_exceeded' ? 'DecodedSizeExceeded' : 'DepthExceeded';

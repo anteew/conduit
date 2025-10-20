@@ -549,7 +549,7 @@ function normalizeHeaders(h: http.IncomingHttpHeaders): Record<string,string>{
 // T7101: Decode request body using codec registry
 function decodeBody(raw: Buffer, contentType: string | undefined): { success: boolean; data?: any; error?: string; codec?: string; capViolation?: { reason: string; limit: number; actual: number } } {
   const bodyBytes = raw.length;
-  const guardrails = getGuardrailsFromEnv();
+  const guardrails = guardrailsConfig;
   
   if (!codecsHttpEnabled) {
     // Feature flag disabled, use JSON
@@ -2180,3 +2180,5 @@ export async function makeClientWithTerminal(config: TerminalConfig, rec?: (f:an
   await client.hello();
   return client;
 }
+// Cache guardrails once (env-driven). Can be refreshed on process reload if needed.
+const guardrailsConfig = getGuardrailsFromEnv();
