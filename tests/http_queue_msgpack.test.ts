@@ -5,9 +5,22 @@
 import * as http from 'http';
 import { msgpackCodec } from '../src/codec/msgpack.js';
 
+interface HttpRequestOptions {
+  method: string;
+  path: string;
+  headers?: Record<string, string>;
+  body?: Buffer | string;
+}
+
+interface HttpResponse {
+  status: number;
+  headers: http.IncomingHttpHeaders;
+  body: Buffer;
+}
+
 const PORT = 9787;
 
-function httpRequest(opts: { method: string; path: string; headers?: Record<string,string>; body?: Buffer|string }): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: Buffer }>{
+function httpRequest(opts: HttpRequestOptions): Promise<HttpResponse> {
   return new Promise((resolve, reject) => {
     const req = http.request({ hostname: '127.0.0.1', port: PORT, method: opts.method, path: opts.path, headers: opts.headers||{} }, (res)=>{
       const chunks: Buffer[] = []; res.on('data', (c)=>chunks.push(Buffer.isBuffer(c)?c:Buffer.from(c)));
