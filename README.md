@@ -74,7 +74,8 @@ curl http://127.0.0.1:9087/health
   - `reports/gateway-ws.log.jsonl` - WebSocket lifecycle (connect/credit/deliver/close)
 - Expanded /v1/metrics endpoint with:
   - HTTP: requests, bytes, durations (p50/p95/p99), rule hits, status codes
-  - WebSocket: connections, messages, credits, deliveries, errors
+  - HTTP Codecs (when `CONDUIT_CODECS_HTTP=true`): per‑codec requests, bytes in/out, decode errors, size/depth cap violations, and encode/decode latency summaries (p50/p95)
+  - WebSocket: connections, messages, credits, deliveries, errors (optional: codec metrics when enabled)
 
 ### Limits
 - CONDUIT_MAX_BODY=1000000 (general body, 1MB)
@@ -95,7 +96,7 @@ curl http://127.0.0.1:9087/health
 - CONDUIT_MAX_CONCURRENT_UPLOADS_PER_IP=10 (max concurrent uploads per IP, default 10)
 - CONDUIT_MAX_GLOBAL_CONNECTIONS=10000 (max total concurrent connections, default 10000)
 
-### Rate Limits & Quotas (T5030)
+### Rate Limits & Quotas (T5030/T5061)
 - CONDUIT_HTTP_RATE_LIMIT_ENABLED=false (enable HTTP rate limiting)
 - CONDUIT_HTTP_RATE_LIMIT_PER_IP=100 (default rate per IP per minute)
 - CONDUIT_HTTP_RATE_LIMIT_WINDOW_MS=60000 (rate limit window, 1 minute)
@@ -108,6 +109,11 @@ curl http://127.0.0.1:9087/health
 - CONDUIT_WS_CONN_RATE_LIMIT=10 (max WebSocket connections per IP per minute, default 10)
 - CONDUIT_WS_CONN_RATE_WINDOW_MS=60000 (connection rate window, 1 minute)
 
+Per‑tenant quotas (configured via `CONDUIT_TENANT_CONFIG`):
+- HTTP request rate limiting (429 + Retry‑After; logged as `http_tenant_rate_limited`)
+- Max concurrent uploads per tenant
+- Max WebSocket connections per tenant (close 1008)
+
 ### Multi-Tenancy (T5061)
 Per-tenant partitioning with isolated limits and metrics:
 - Configure tenants in `config/tenants.yaml`
@@ -116,7 +122,36 @@ Per-tenant partitioning with isolated limits and metrics:
 - Per-tenant upload concurrency limits
 - Per-tenant WebSocket connection limits
 - Per-tenant metrics tracking (requests, bytes, uploads, connections, errors)
-- Tenant ID extracted from Bearer token or x-tenant-id header
+- Tenant ID extracted from API token (allowlist) or Bearer token (JWT with `tenant` claim). Fallback prefix parsing supported for dev/testing.
+
+## Codecs (HTTP/WS)
+
+Flags:
+- `CONDUIT_CODECS_HTTP=true|false` (default false)
+- `CONDUIT_CODECS_WS=true|false` (default false)
+
+Media types:
+- Requests: `application/json`, `application/msgpack`, `application/vnd.msgpack` (legacy `application/x-msgpack` accepted)
+- Responses: negotiated via `Accept` or `X-Codec` header (JSON default)
+
+Guardrails (decoded payload):
+- Size cap and depth cap enforced per request; violations return 400 with details, logged and counted in metrics.
+
+Close codes (WS):
+- 1007 Invalid Frame Payload (e.g., JSON SyntaxError, MessagePack decode error)
+- 1009 Message Too Big (exceeds `CONDUIT_WS_MAX_MESSAGE_SIZE`)
+- 1011 Internal Error (unexpected errors)
+
+## Uploads
+
+Multipart (busboy): safety limits and per‑file metadata logging; supports blob sink storage.
+
+Octet‑stream fast‑path (`Content-Type: application/octet-stream`):
+- Streams directly to the blob sink on `/v1/upload`.
+- Sync response: set `CONDUIT_UPLOAD_SYNC=true` or `X-Upload-Mode: sync` to return `{ blobRef }` on 200.
+- Async response: default 202 `{ ok: true }`, drains in background.
+
+BlobRef fields: `{ blobId, backend, sha256, size, mime, uploadedAt, [path|bucket/key|url] }`.
 - See config/tenants.yaml for example configuration
 
 ## T5010: Multipart Upload Safety Limits (New)
