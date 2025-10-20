@@ -77,6 +77,31 @@ curl http://127.0.0.1:9087/health
   - HTTP Codecs (when `CONDUIT_CODECS_HTTP=true`): per‑codec requests, bytes in/out, decode errors, size/depth cap violations, and encode/decode latency summaries (p50/p95)
   - WebSocket: connections, messages, credits, deliveries, errors (optional: codec metrics when enabled)
 
+#### Codecs — Quick Examples
+
+HTTP (MessagePack response negotiation):
+```bash
+export CONDUIT_CODECS_HTTP=true
+curl -s -H "Accept: application/msgpack;q=1.0, application/json;q=0.8" \
+  http://127.0.0.1:9087/v1/metrics -o /tmp/metrics.msgpack
+```
+
+HTTP (override to JSON for clients without MessagePack):
+```bash
+curl -s -H "X-Codec: json" http://127.0.0.1:9087/v1/metrics | jq .gateway.http.codecs
+```
+
+WebSocket (request msgpack; server will fallback to JSON if msgpack not available):
+```bash
+export CONDUIT_CODECS_WS=true
+node -e "import WebSocket from 'ws'; const ws=new WebSocket('ws://127.0.0.1:9088/ws?codec=msgpack'); ws.on('open',()=>{ws.send(JSON.stringify({op:'hello'})); ws.close();});"
+```
+
+Inspect codec metrics after traffic:
+```bash
+curl -s http://127.0.0.1:9087/v1/metrics | jq '.gateway.http.codecs, .gateway.ws.codecs'
+```
+
 ### Limits
 - CONDUIT_MAX_BODY=1000000 (general body, 1MB)
 - CONDUIT_MAX_JSON_SIZE=10485760 (JSON body, 10MB)
