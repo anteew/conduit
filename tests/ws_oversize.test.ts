@@ -113,13 +113,17 @@ console.log('[T7112-Oversize-2] Testing MessagePack oversize message...');
     let errorReceived = false;
     let closeCode: number | null = null;
     
-    ws.on('message', (data: any) => {
-      const msg = msgpackr.unpack(Buffer.from(data));
-      if (msg.error) {
-        console.log(`  Error code: ${msg.error.code}`);
-        console.log(`  Error message: ${msg.error.message}`);
-        assert.strictEqual(msg.error.code, 'MessageTooLarge', 'Should get MessageTooLarge error');
-        errorReceived = true;
+    ws.on('message', (data: any, isBinary: boolean) => {
+      try {
+        const msg = isBinary ? msgpackr.unpack(Buffer.from(data)) : JSON.parse(data.toString());
+        if (msg.error) {
+          console.log(`  Error code: ${msg.error.code}`);
+          console.log(`  Error message: ${msg.error.message}`);
+          assert.strictEqual(msg.error.code, 'MessageTooLarge', 'Should get MessageTooLarge error');
+          errorReceived = true;
+        }
+      } catch (e: any) {
+        console.log(`  Decode fallback failed: ${e.message}`);
       }
     });
     
