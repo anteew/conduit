@@ -84,6 +84,15 @@ process.on('SIGHUP', async () => {
       reloadedItems.push('tenant config');
     }
     
+    // Reload guardrails (codec limits)
+    try {
+      const { reloadGuardrails } = await import('./connectors/http.js');
+      reloadGuardrails();
+      reloadedItems.push('guardrails');
+    } catch (e) {
+      console.warn('[Reload] Guardrails reload failed:', (e as any)?.message || e);
+    }
+
     // Graceful drain: allow existing requests to complete (up to 30s)
     const drainTimeout = Number(process.env.CONDUIT_RELOAD_DRAIN_TIMEOUT_MS || 30000);
     console.log(`[Reload] Waiting ${drainTimeout}ms for active requests to drain...`);
