@@ -46,15 +46,15 @@ process.on('SIGHUP', async () => {
         let reloadedItems = [];
         // Reload DSL rules if configured
         if (process.env.CONDUIT_RULES) {
-            const { reloadDSL } = require('./connectors/http.js');
+            const { reloadDSL } = await import('./connectors/http.js');
             reloadDSL();
             reloadedItems.push('DSL rules');
         }
         // T5061: Reload tenant configuration
         const tenantConfigPath = process.env.CONDUIT_TENANT_CONFIG || './config/tenants.yaml';
-        const fs = require('fs');
+        const fs = await import('fs');
         if (fs.existsSync(tenantConfigPath)) {
-            const { reloadTenants } = require('./connectors/http.js');
+            const { reloadTenants } = await import('./connectors/http.js');
             reloadTenants();
             reloadedItems.push('tenant config');
         }
@@ -63,14 +63,14 @@ process.on('SIGHUP', async () => {
         console.log(`[Reload] Waiting ${drainTimeout}ms for active requests to drain...`);
         // Mark server as draining (will reject new connections during reload if configured)
         if (httpServer) {
-            const { setDrainingMode } = require('./connectors/http.js');
+            const { setDrainingMode } = await import('./connectors/http.js');
             setDrainingMode(true);
         }
         // Wait for drain timeout (allows in-flight requests to complete)
         await new Promise(resolve => setTimeout(resolve, drainTimeout));
         // Resume accepting new connections
         if (httpServer) {
-            const { setDrainingMode } = require('./connectors/http.js');
+            const { setDrainingMode } = await import('./connectors/http.js');
             setDrainingMode(false);
         }
         console.log(`[Reload] Configuration reloaded successfully: ${reloadedItems.join(', ')}`);
@@ -95,12 +95,12 @@ async function gracefulShutdown(signal) {
         const shutdownTimeout = Number(process.env.CONDUIT_SHUTDOWN_TIMEOUT_MS || 30000);
         // Stop accepting new connections
         if (httpServer) {
-            const { setDrainingMode } = require('./connectors/http.js');
+            const { setDrainingMode } = await import('./connectors/http.js');
             setDrainingMode(true);
             console.log('[Shutdown] HTTP server draining...');
         }
         if (wsServer) {
-            const { setWsDrainingMode } = require('./connectors/ws.js');
+            const { setWsDrainingMode } = await import('./connectors/ws.js');
             setWsDrainingMode(true);
             console.log('[Shutdown] WebSocket server draining...');
         }

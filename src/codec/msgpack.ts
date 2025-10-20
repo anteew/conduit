@@ -21,3 +21,9 @@ export const msgpackCodec: Codec = {
   }
 };
 
+// T7110: createMsgPackCodec for tests
+export async function createMsgPackCodec(): Promise<Codec | null> {
+  if (!msgpack) return null;
+  return msgpackCodec;
+}
+

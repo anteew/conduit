@@ -224,6 +224,9 @@ jq -r '.url' reports/gateway-http.log.jsonl | sort | uniq -c | sort -rn | head -
 | `CONDUIT_MAX_GLOBAL_CONNECTIONS` | `10000` | Max total concurrent connections |
 | `CONDUIT_RECORD` | `""` | Control frame log path (debug) |
 | `CONDUIT_RECORD_REDACT` | `true` | Redact sensitive fields in logs |
+| `CONDUIT_CODECS_HTTP` | `false` | Enable HTTP codec negotiation (msgpack) |
+| `CONDUIT_CODECS_WS` | `false` | Enable WebSocket codec negotiation (msgpack) |
+| `CONDUIT_DEFAULT_CODEC` | `json` | Default codec when Accept is ambiguous |
 
 ### Runtime Configuration
 
@@ -668,6 +671,158 @@ curl http://localhost:9087/v1/metrics | jq '.gateway.http.uploads'
 5. **Enable rate limiting** to prevent abuse
 6. **Rotate tokens** periodically
 7. **Monitor logs** for suspicious activity (high 401 rates, unusual IPs)
+
+---
+
+## HTTP Codec Negotiation (Opt-In)
+
+### Enabling Codec Support
+
+**Feature:** T7101 - HTTP request body decoding via codec registry  
+**Status:** Opt-in via `CONDUIT_CODECS_HTTP=true`  
+**Default:** Disabled (uses JSON-only decoding)
+
+**Configuration:**
+```bash
+export CONDUIT_CODECS_HTTP=true
+npm run dev
+```
+
+**Supported Codecs:**
+- `application/json` - JSON codec (default)
+- `application/msgpack` - MessagePack binary codec
+- Structured suffix support: `application/vnd.api+json` auto-detects JSON
+
+**How It Works:**
+1. Client sends request with `Content-Type: application/msgpack`
+2. Gateway detects codec from Content-Type header
+3. Request body decoded using selected codec
+4. Decode errors return `400 Bad Request` with error details
+
+**Example Usage:**
+```bash
+# JSON request (works with or without flag)
+curl -X POST http://localhost:9087/v1/enqueue \
+  -H "Content-Type: application/json" \
+  -d '{"to":"agents/inbox","envelope":{"hello":"world"}}'
+
+# MessagePack request (requires CONDUIT_CODECS_HTTP=true)
+curl -X POST http://localhost:9087/v1/enqueue \
+  -H "Content-Type: application/msgpack" \
+  --data-binary @request.msgpack
+```
+
+**Error Responses:**
+```json
+{
+  "error": "Request body decode failed",
+  "details": "Invalid MessagePack format",
+  "codec": "msgpack"
+}
+```
+
+**Monitoring:**
+- Decode errors logged with `error: 'decode_error'`
+- Codec usage tracked in metrics (T7103 - future)
+- Check logs: `jq 'select(.error == "decode_error")' reports/gateway-http.log.jsonl`
+
+**Rollback:**
+- Set `CONDUIT_CODECS_HTTP=false` or unset to disable
+- All requests fallback to JSON decoding when disabled
+
+---
+
+## Binary Codec Usage
+
+### Enabling Codecs
+
+Binary codecs (MessagePack) reduce CPU and bandwidth for high-throughput workloads:
+
+```bash
+# Enable HTTP codec negotiation
+CONDUIT_CODECS_HTTP=true
+
+# Enable WebSocket codec negotiation
+CONDUIT_CODECS_WS=true
+
+# Set default codec when Accept header is ambiguous or */*
+CONDUIT_DEFAULT_CODEC=msgpack  # or 'json' (default)
+```
+
+### HTTP Examples
+
+**Sending MessagePack request:**
+```bash
+# Enqueue with msgpack encoding
+curl -X POST http://localhost:9087/v1/enqueue \
+  -H "Content-Type: application/msgpack" \
+  -H "Authorization: Bearer token123" \
+  --data-binary @payload.msgpack
+
+# Request msgpack response
+curl http://localhost:9087/v1/metrics \
+  -H "Accept: application/msgpack" \
+  --output metrics.msgpack
+```
+
+**Content negotiation with quality values:**
+```bash
+# Prefer msgpack, fallback to JSON
+curl http://localhost:9087/v1/metrics \
+  -H "Accept: application/msgpack;q=0.9, application/json;q=0.5"
+```
+
+**X-Codec header override (T7102):**
+```bash
+# Force msgpack response regardless of Accept header
+curl http://localhost:9087/v1/metrics \
+  -H "X-Codec: msgpack" \
+  --output metrics.msgpack
+
+# Force JSON response even with msgpack Accept header
+curl http://localhost:9087/v1/metrics \
+  -H "Accept: application/msgpack" \
+  -H "X-Codec: json"
+
+# Invalid codec falls back to Accept negotiation
+curl http://localhost:9087/v1/metrics \
+  -H "X-Codec: invalid-codec" \
+  -H "Accept: application/json"
+```
+
+**Supported Content-Type values:**
+- `application/json` (default)
+- `application/msgpack`
+- `application/x-msgpack`
+
+### WebSocket Examples
+
+**Connect with codec negotiation:**
+```bash
+# JSON (default)
+wscat -c "ws://localhost:9088/v1/subscribe?stream=agents/inbox&codec=json"
+
+# MessagePack binary frames
+wscat -c "ws://localhost:9088/v1/subscribe?stream=agents/inbox&codec=msgpack"
+```
+
+**Query parameters:**
+- `?codec=json` - Use JSON text frames
+- `?codec=msgpack` - Use MessagePack binary frames
+- No parameter - Defaults to JSON
+
+**Frame types:**
+- JSON codec: Text frames (opcode 0x1)
+- MessagePack codec: Binary frames (opcode 0x2)
+
+### Performance Considerations
+
+MessagePack typically provides:
+- 30-50% smaller payload sizes
+- 2-3x faster encode/decode vs JSON
+- Suitable for high-volume agent messaging
+
+See `examples/codec-comparison/` for benchmarks.
 
 ---
 

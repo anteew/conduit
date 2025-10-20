@@ -434,6 +434,11 @@ Each log entry is a single-line JSON object with the following fields:
 {"ts":"2025-10-19T14:23:48.456Z","ip":"127.0.0.1","method":"GET","path":"/v1/metrics","status":200,"durMs":12}
 ```
 
+#### Request with codec (T7103)
+```json
+{"ts":"2025-10-19T14:23:49.789Z","ip":"127.0.0.1","method":"POST","path":"/v1/enqueue","bytes":512,"status":200,"durMs":8,"codec":"msgpack"}
+```
+
 ### Error Codes
 
 Common error codes in the `error` field:
@@ -653,6 +658,28 @@ The `/v1/metrics` endpoint now includes comprehensive HTTP and WebSocket metrics
     "uploads": {
       "count": 100,
       "bytesTotal": 104857600
+    },
+    "codecs": {
+      "requestsByCodec": {
+        "json": 950,
+        "msgpack": 200,
+        "cbor": 84
+      },
+      "bytesInByCodec": {
+        "json": 95000000,
+        "msgpack": 8000000,
+        "cbor": 1857600
+      },
+      "bytesOutByCodec": {
+        "json": 450000,
+        "msgpack": 60000,
+        "cbor": 14288
+      },
+      "decodeErrorsByCodec": {
+        "json": 12,
+        "msgpack": 3,
+        "cbor": 1
+      }
     }
   }
 }
@@ -695,4 +722,90 @@ curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.durations.p95'
 
 # Monitor metrics in real-time
 watch -n 1 'curl -sS http://127.0.0.1:9087/v1/metrics | jq'
+```
+
+### Codec Metrics (T7103, T7120)
+
+When `CONDUIT_CODECS_HTTP=true` is enabled, the metrics endpoint includes per-codec observability data:
+
+```bash
+# Get codec usage breakdown
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.codecs.requestsByCodec'
+
+# Get bytes transferred by codec
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.codecs.bytesInByCodec'
+
+# Get codec decode errors
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.codecs.decodeErrorsByCodec'
+
+# Get decoded payload size cap violations (T7120)
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.codecs.sizeCapViolations'
+
+# Get decoded payload depth cap violations (T7120)
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '.http.codecs.depthCapViolations'
+
+# Calculate efficiency: bytes out vs bytes in for msgpack
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '{
+  in: .http.codecs.bytesInByCodec.msgpack,
+  out: .http.codecs.bytesOutByCodec.msgpack,
+  ratio: (.http.codecs.bytesOutByCodec.msgpack / .http.codecs.bytesInByCodec.msgpack)
+}'
+```
+
+#### Decoded Payload Guardrails (T7120)
+
+Conduit protects against pathological payloads by enforcing limits on decoded payload size and nesting depth:
+
+**Configuration:**
+```bash
+export CONDUIT_CODEC_MAX_DECODED_SIZE=10485760  # 10MB default
+export CONDUIT_CODEC_MAX_DEPTH=32               # 32 levels default
+```
+
+**HTTP Behavior:**
+- Returns `400 Bad Request` when limits exceeded
+- Logs violations with `capViolation`, `capLimit`, and `capActual` fields
+- Tracks per-codec violation counts in metrics
+
+**WebSocket Behavior:**
+- Closes connection with code `1007 Invalid Frame Payload` when limits exceeded
+- Logs violations with limit and actual values
+- Tracks per-codec violation counts in metrics
+
+**Monitoring Cap Violations:**
+```bash
+# HTTP: Find size cap violations in logs
+cat reports/gateway-http.log.jsonl | jq 'select(.capViolation == "decoded_size_exceeded")'
+
+# HTTP: Find depth cap violations in logs
+cat reports/gateway-http.log.jsonl | jq 'select(.capViolation == "depth_exceeded")'
+
+# WebSocket: Find cap violations in logs
+cat reports/gateway-ws.log.jsonl | jq 'select(.error | contains("DecodedSizeExceeded") or contains("DepthExceeded"))'
+
+# Check violation counts from metrics
+curl -sS http://127.0.0.1:9087/v1/metrics | jq '{
+  http_size: .http.codecs.sizeCapViolations,
+  http_depth: .http.codecs.depthCapViolations,
+  ws_size: .ws.sizeCapViolations,
+  ws_depth: .ws.depthCapViolations
+}'
+```
+
+#### Codec Log Analysis
+
+When codec metrics are enabled, all HTTP logs include a `codec` field:
+
+```bash
+# Count requests by codec from logs
+cat reports/gateway-http.log.jsonl | jq -r '.codec' | sort | uniq -c
+
+# Find decode errors by codec
+cat reports/gateway-http.log.jsonl | jq 'select(.error == "decode_error") | {codec, error, path}'
+
+# Average request duration by codec
+cat reports/gateway-http.log.jsonl | jq -s 'group_by(.codec) | map({
+  codec: .[0].codec,
+  avgDurMs: ([.[] | .durMs] | add / length)
+})'
 ```
