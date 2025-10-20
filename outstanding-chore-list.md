@@ -6,6 +6,7 @@ A living checklist of small, well-scoped follow‑ups. We can add/remove as we s
 - Remove legacy `application/x-msgpack` in a future major (keep for backward compat in v1). File: `src/codec/msgpack.ts`.
 - Add response negotiation tests for MessagePack on endpoints beyond `/v1/metrics` (e.g., errors and queueRefs). Files: `tests/http_codec_encode.test.ts` (+ new cases).
 - Consider optional CBOR/Avro codecs behind flags; document trade‑offs and guardrails. New files under `src/codec/*` + registry wiring.
+ - Enable MessagePack request‑body decode on protected endpoints (e.g., `/v1/enqueue`, `/v1/queue`) when `CONDUIT_CODECS_HTTP=true`. Today, the request decode path may default to JSON even for `Content-Type: application/msgpack`; tests added in `tests/codec_guardrails_msgpack.test.ts` currently skip HTTP guardrail assertions if decode falls back to JSON. Wire `decodeBody` to use the codec registry for request payloads and update tests to assert guardrail codes (DecodedSizeExceeded/DepthExceeded) for MessagePack bodies.
 
 ## Guardrails & Reload
 - Wire guardrail reload into SIGHUP/admin endpoint similar to DSL/tenants (currently cached at module/process load). Files: `src/connectors/http.ts`, `src/connectors/ws.ts`, `src/index.ts`.
@@ -34,4 +35,3 @@ A living checklist of small, well-scoped follow‑ups. We can add/remove as we s
 
 ## Nice‑to‑Have
 - mkctl helpers to query `/v1/metrics`, `/health`, and toggle guardrails (if admin endpoint added). New script(s) under `scripts/`.
-
