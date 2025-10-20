@@ -23,7 +23,14 @@ const PORT = 9787;
 function httpRequest(opts: HttpRequestOptions): Promise<HttpResponse> {
   return new Promise((resolve, reject) => {
     const req = http.request({ hostname: '127.0.0.1', port: PORT, method: opts.method, path: opts.path, headers: opts.headers||{} }, (res)=>{
-      const chunks: Buffer[] = []; res.on('data', (c)=>chunks.push(Buffer.isBuffer(c)?c:Buffer.from(c)));
+      const chunks: Buffer[] = [];
+      res.on('data', (c) => {
+        if (Buffer.isBuffer(c)) {
+          chunks.push(c);
+        } else {
+          chunks.push(Buffer.from(c));
+        }
+      });
       res.on('end', ()=> resolve({ status: res.statusCode||0, headers: res.headers, body: Buffer.concat(chunks) }));
     });
     req.on('error', reject);
