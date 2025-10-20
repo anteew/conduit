@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import * as zlib from 'zlib';
 import * as busboy from 'busboy';
 import { PassThrough } from 'stream';
+import { getWsMetrics as getWsMetricsLive } from './ws.js';
 import { PipeClient, makeDuplexPair } from '../control/client.js';
 import { DemoPipeServer } from '../backend/demo.js';
 import { applyRules } from '../dsl/interpreter.js';
@@ -14,6 +15,7 @@ import { TCPTerminal } from '../control/terminal.js';
 import { createBlobSink, createQueueSink } from '../backends/factory.js';
 import { IdempotencyCache } from '../idempotency/cache.js';
 import { TenantManager } from '../tenancy/tenant-manager.js';
+import { detectForHttp, chooseForHttpResponse, getCodecByName } from '../codec/registry.js';
 function parseCorsOrigins() {
     const originsEnv = process.env.CONDUIT_CORS_ORIGINS?.trim();
     if (!originsEnv) {
@@ -112,9 +114,47 @@ function logJsonl(entry) {
         console.error(`[HTTP] Failed to write log entry: ${e.message}`);
     }
 }
-function send(res, code, body, idempotencyKey) {
-    res.writeHead(code, { 'content-type': 'application/json' });
-    res.end(JSON.stringify(body));
+function send(res, code, body, idempotencyKey, responseCodec) {
+    // T7102: Response encoding with Accept header negotiation
+    let codec;
+    if (responseCodec) {
+        // Explicit codec provided by caller
+        codec = responseCodec;
+    }
+    else if (codecsHttpEnabled) {
+        // T7102: Negotiate codec from Accept header or X-Codec override
+        const acceptHeader = res.req?.headers['accept'];
+        const xCodecHeader = res.req?.headers['x-codec'];
+        if (xCodecHeader) {
+            // X-Codec header takes precedence
+            const overrideCodec = getCodecByName(xCodecHeader);
+            codec = overrideCodec || chooseForHttpResponse(acceptHeader);
+        }
+        else {
+            // Negotiate from Accept header
+            codec = chooseForHttpResponse(acceptHeader);
+        }
+    }
+    else {
+        // Feature flag disabled, use JSON
+        codec = { name: 'json', contentTypes: ['application/json'], isBinary: false, encode: (o) => Buffer.from(JSON.stringify(o)), decode: (b) => JSON.parse(b) };
+    }
+    // Encode response body
+    try {
+        const encoded = codec.encode(body);
+        const encodedBytes = encoded.length;
+        res.writeHead(code, { 'content-type': codec.contentTypes[0] || 'application/json' });
+        res.end(encoded);
+        recordCodecMetrics('encode', codec.name, true, encodedBytes);
+    }
+    catch (err) {
+        // Encoding failed, fallback to JSON
+        console.error(`[HTTP] Response encode failed with ${codec.name}: ${err.message}, falling back to JSON`);
+        const fallback = JSON.stringify(body);
+        res.writeHead(code, { 'content-type': 'application/json' });
+        res.end(fallback);
+        recordCodecMetrics('encode', codec.name, false);
+    }
     // Cache successful responses for idempotency
     if (idempotencyKey && code >= 200 && code < 300) {
         idempotencyCache.set(idempotencyKey, { status: code, body, timestamp: Date.now() });
@@ -149,6 +189,11 @@ catch (e) {
 // Initialize tenancy
 const tenantConfigPath = process.env.CONDUIT_TENANT_CONFIG || path.join(process.cwd(), 'config', 'tenants.yaml');
 const tenantManager = new TenantManager(tenantConfigPath);
+// T7101: HTTP Codec feature flag
+const codecsHttpEnabled = process.env.CONDUIT_CODECS_HTTP === 'true';
+if (codecsHttpEnabled) {
+    console.log('[HTTP] Codec negotiation enabled (CONDUIT_CODECS_HTTP=true)');
+}
 // Initialize CORS
 const corsConfig = parseCorsOrigins();
 if (corsConfig.enabled) {
@@ -157,7 +202,7 @@ if (corsConfig.enabled) {
 // T5023: Initialize auth with token allowlist and OIDC stub
 const tokenAllowlist = process.env.CONDUIT_TOKENS ?
     new Set(process.env.CONDUIT_TOKENS.split(',').map(t => t.trim())) : null;
-const protectedEndpoints = ['/v1/enqueue', '/v1/upload', '/v1/stats', '/v1/snapshot', '/v1/admin/reload'];
+const protectedEndpoints = ['/v1/enqueue', '/v1/upload', '/v1/queue', '/v1/stats', '/v1/snapshot', '/v1/admin/reload'];
 // OIDC configuration stub for future implementation
 const oidcConfig = {
     enabled: process.env.CONDUIT_OIDC_ENABLED === 'true',
@@ -171,15 +216,30 @@ if (oidcConfig.enabled) {
 if (tokenAllowlist) {
     console.log(`[Auth] Token allowlist enabled: ${tokenAllowlist.size} tokens configured`);
     console.log(`[Auth] Protected endpoints: ${protectedEndpoints.join(', ')}`);
+    console.log(`[Auth] Accepting Authorization: Bearer and X-Token headers`);
+}
+// T6104: Extract token from Authorization: Bearer or X-Token header
+function extractToken(headers) {
+    const authHeader = headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+    }
+    const xToken = headers['x-token'];
+    if (xToken) {
+        return xToken;
+    }
+    return null;
 }
 // T5030: Initialize rate limiter with per-endpoint rate and burst
 const endpointLimits = new Map();
 endpointLimits.set('/v1/enqueue', Number(process.env.CONDUIT_HTTP_RATE_LIMIT_ENQUEUE || 50));
 endpointLimits.set('/v1/upload', Number(process.env.CONDUIT_HTTP_RATE_LIMIT_UPLOAD || 10));
+endpointLimits.set('/v1/queue', Number(process.env.CONDUIT_HTTP_RATE_LIMIT_QUEUE || 50));
 endpointLimits.set('/v1/stats', Number(process.env.CONDUIT_HTTP_RATE_LIMIT_STATS || 100));
 const burstLimits = new Map();
 burstLimits.set('/v1/enqueue', Number(process.env.CONDUIT_HTTP_BURST_LIMIT_ENQUEUE || 100)); // 2x rate
 burstLimits.set('/v1/upload', Number(process.env.CONDUIT_HTTP_BURST_LIMIT_UPLOAD || 20));
+burstLimits.set('/v1/queue', Number(process.env.CONDUIT_HTTP_BURST_LIMIT_QUEUE || 100));
 burstLimits.set('/v1/stats', Number(process.env.CONDUIT_HTTP_BURST_LIMIT_STATS || 200));
 const rateLimitConfig = {
     enabled: String(process.env.CONDUIT_HTTP_RATE_LIMIT_ENABLED || 'false').toLowerCase() === 'true',
@@ -229,6 +289,35 @@ const httpMetrics = {
     uploadBytesTotal: 0,
     ruleHits: new Map()
 };
+// T7103: Per-codec observability metrics
+const codecMetrics = {
+    requestsByCodec: new Map(),
+    bytesInByCodec: new Map(),
+    bytesOutByCodec: new Map(),
+    decodeErrorsByCodec: new Map()
+};
+function recordCodecMetrics(operation, codec, success, bytes) {
+    if (!codecsHttpEnabled)
+        return;
+    if (operation === 'decode') {
+        // Track requests by codec
+        codecMetrics.requestsByCodec.set(codec, (codecMetrics.requestsByCodec.get(codec) || 0) + 1);
+        // Track decode errors by codec
+        if (!success) {
+            codecMetrics.decodeErrorsByCodec.set(codec, (codecMetrics.decodeErrorsByCodec.get(codec) || 0) + 1);
+        }
+        // Track bytes in by codec
+        if (success && bytes !== undefined) {
+            codecMetrics.bytesInByCodec.set(codec, (codecMetrics.bytesInByCodec.get(codec) || 0) + bytes);
+        }
+    }
+    else if (operation === 'encode') {
+        // Track bytes out by codec (responses)
+        if (success && bytes !== undefined) {
+            codecMetrics.bytesOutByCodec.set(codec, (codecMetrics.bytesOutByCodec.get(codec) || 0) + bytes);
+        }
+    }
+}
 // Placeholder for WS metrics (populated by ws.ts)
 let wsMetrics = null;
 export function setWsMetrics(metrics) {
@@ -262,7 +351,7 @@ function getMetricsSummary() {
     const p50 = durations[Math.floor(durations.length * 0.5)] || 0;
     const p95 = durations[Math.floor(durations.length * 0.95)] || 0;
     const p99 = durations[Math.floor(durations.length * 0.99)] || 0;
-    return {
+    const summary = {
         http: {
             requestsTotal: httpMetrics.requestsTotal,
             bytesIn: httpMetrics.bytesIn,
@@ -283,6 +372,16 @@ function getMetricsSummary() {
         },
         tenants: tenantManager.getMetrics()
     };
+    // T7103: Add codec metrics when feature is enabled
+    if (codecsHttpEnabled) {
+        summary.http.codecs = {
+            requestsByCodec: Object.fromEntries(codecMetrics.requestsByCodec),
+            bytesInByCodec: Object.fromEntries(codecMetrics.bytesInByCodec),
+            bytesOutByCodec: Object.fromEntries(codecMetrics.bytesOutByCodec),
+            decodeErrorsByCodec: Object.fromEntries(codecMetrics.decodeErrorsByCodec)
+        };
+    }
+    return summary;
 }
 export function loadDSLConfig(path) {
     dslConfig = loadDSL(path);
@@ -343,6 +442,44 @@ function normalizeHeaders(h) {
     });
     return out;
 }
+// T7101: Decode request body using codec registry
+function decodeBody(body, contentType) {
+    const bodyBytes = Buffer.byteLength(body);
+    if (!codecsHttpEnabled) {
+        // Feature flag disabled, use JSON
+        try {
+            const data = body ? JSON.parse(body) : {};
+            return { success: true, data, codec: 'json' };
+        }
+        catch (e) {
+            return { success: false, error: e.message || 'Invalid JSON', codec: 'json' };
+        }
+    }
+    // Detect codec from Content-Type
+    const codec = detectForHttp(contentType);
+    if (!codec) {
+        // No codec detected, fallback to JSON
+        try {
+            const data = body ? JSON.parse(body) : {};
+            recordCodecMetrics('decode', 'json', true, bodyBytes);
+            return { success: true, data, codec: 'json' };
+        }
+        catch (e) {
+            recordCodecMetrics('decode', 'json', false, bodyBytes);
+            return { success: false, error: e.message || 'Invalid JSON', codec: 'json' };
+        }
+    }
+    // Decode with detected codec
+    try {
+        const data = codec.decode(body);
+        recordCodecMetrics('decode', codec.name, true, bodyBytes);
+        return { success: true, data, codec: codec.name };
+    }
+    catch (e) {
+        recordCodecMetrics('decode', codec.name, false, bodyBytes);
+        return { success: false, error: e.message || 'Decode failed', codec: codec.name };
+    }
+}
 async function handleWithDSL(client, req, res) {
     if (!dslConfig)
         return false;
@@ -392,96 +529,170 @@ async function handleWithDSL(client, req, res) {
             // Async: send response now
             send(res, status, responseBody);
         }
-        // Drain with instrumentation (optional file sink)
-        let total = 0;
-        let lastMark = 0;
-        const started = process.hrtime.bigint();
-        // Optional file sink for tests: set CONDUIT_UPLOAD_FILE or CONDUIT_UPLOAD_DIR
-        const sinkFile = process.env.CONDUIT_UPLOAD_FILE;
-        const sinkDir = process.env.CONDUIT_UPLOAD_DIR;
-        let dest = null;
-        let sinkPath = null;
-        try {
-            if (isOctet && isUploadPath && (sinkFile || sinkDir)) {
-                if (sinkFile) {
-                    sinkPath = sinkFile;
+        // T6101: Stream to blobSink and return blobRef (or fallback to drain)
+        const useBlobSinkForOctet = isOctet && isUploadPath && blobSink;
+        if (useBlobSinkForOctet) {
+            const passThrough = new PassThrough();
+            const hashStream = crypto.createHash('sha256');
+            let total = 0;
+            const started = process.hrtime.bigint();
+            const filename = headers['x-filename'] || `upload-${Date.now()}.bin`;
+            const mime = contentType || 'application/octet-stream';
+            // Start the store operation (it will read from passThrough)
+            const storePromise = blobSink.store(passThrough, {
+                filename,
+                mime,
+                clientIp: ip,
+                tags: {}
+            });
+            req.on('data', (chunk) => {
+                total += chunk.length;
+                hashStream.update(chunk);
+                passThrough.write(chunk);
+            });
+            req.on('end', async () => {
+                passThrough.end();
+                const sha256 = hashStream.digest('hex');
+                const durNs = Number(process.hrtime.bigint() - started);
+                const secs = durNs / 1e9;
+                const mb = total / 1048576;
+                const rate = secs > 0 ? (mb / secs) : 0;
+                try {
+                    const blobRef = await storePromise;
+                    console.log(`[HTTP] octet-stream → blobSink: ${mb.toFixed(1)} MB in ${secs.toFixed(3)}s (${rate.toFixed(1)} MB/s), blobId=${blobRef.blobId}, sha256=${sha256.substring(0, 16)}...`);
+                    logJsonl({
+                        ts: new Date().toISOString(),
+                        event: 'http_request_complete',
+                        ip,
+                        method: req.method,
+                        path: url.pathname,
+                        bytes: total,
+                        durMs: Math.round(durNs / 1e6),
+                        rateMBps: parseFloat(rate.toFixed(2)),
+                        ruleId,
+                        status: 200,
+                        sha256,
+                        mime: blobRef.mime,
+                        size: blobRef.size
+                    });
+                    if (syncUpload) {
+                        send(res, 200, { blobRef });
+                    }
                 }
-                else if (sinkDir) {
-                    fs.mkdirSync(sinkDir, { recursive: true });
-                    sinkPath = path.join(sinkDir, `upload_${Date.now()}_${Math.random().toString(36).slice(2)}.bin`);
+                catch (err) {
+                    console.error(`[HTTP] blobSink failed for octet-stream: ${err.message}`);
+                    logJsonl({
+                        ts: new Date().toISOString(),
+                        event: 'http_request_complete',
+                        ip,
+                        method: req.method,
+                        path: url.pathname,
+                        durMs: Math.round(durNs / 1e6),
+                        status: 500,
+                        error: 'blob_storage_failed'
+                    });
+                    if (syncUpload) {
+                        send(res, 500, { error: 'Blob storage failed', details: err.message });
+                    }
                 }
-                if (sinkPath)
-                    dest = fs.createWriteStream(sinkPath);
-            }
+            });
+            req.on('error', (err) => {
+                console.error(`[HTTP] Request stream error: ${err.message}`);
+                passThrough.destroy(err);
+            });
+            req.resume();
         }
-        catch (e) {
-            console.error(`[HTTP] upload sink setup failed: ${e?.message || e}`);
-        }
-        req.on('data', (chunk) => {
-            total += chunk.length;
-            if (dest) {
-                if (!dest.write(chunk))
-                    req.pause(), dest.once('drain', () => req.resume());
+        else {
+            // Fallback: Drain with instrumentation (optional file sink)
+            let total = 0;
+            let lastMark = 0;
+            const started = process.hrtime.bigint();
+            const sinkFile = process.env.CONDUIT_UPLOAD_FILE;
+            const sinkDir = process.env.CONDUIT_UPLOAD_DIR;
+            let dest = null;
+            let sinkPath = null;
+            try {
+                if (isOctet && isUploadPath && (sinkFile || sinkDir)) {
+                    if (sinkFile) {
+                        sinkPath = sinkFile;
+                    }
+                    else if (sinkDir) {
+                        fs.mkdirSync(sinkDir, { recursive: true });
+                        sinkPath = path.join(sinkDir, `upload_${Date.now()}_${Math.random().toString(36).slice(2)}.bin`);
+                    }
+                    if (sinkPath)
+                        dest = fs.createWriteStream(sinkPath);
+                }
             }
-            if (total - lastMark >= 10 * 1024 * 1024) { // every 10MB
-                lastMark = total;
-                const currentDurNs = Number(process.hrtime.bigint() - started);
-                const currentSecs = currentDurNs / 1e9;
-                const currentMB = total / 1048576;
-                const currentRate = currentSecs > 0 ? (currentMB / currentSecs) : 0;
-                console.log(`[HTTP] draining octet-stream: ${(total / 1048576).toFixed(1)} MB`);
+            catch (e) {
+                console.error(`[HTTP] upload sink setup failed: ${e?.message || e}`);
+            }
+            req.on('data', (chunk) => {
+                total += chunk.length;
+                if (dest) {
+                    if (!dest.write(chunk))
+                        req.pause(), dest.once('drain', () => req.resume());
+                }
+                if (total - lastMark >= 10 * 1024 * 1024) {
+                    lastMark = total;
+                    const currentDurNs = Number(process.hrtime.bigint() - started);
+                    const currentSecs = currentDurNs / 1e9;
+                    const currentMB = total / 1048576;
+                    const currentRate = currentSecs > 0 ? (currentMB / currentSecs) : 0;
+                    console.log(`[HTTP] draining octet-stream: ${(total / 1048576).toFixed(1)} MB`);
+                    logJsonl({
+                        ts: new Date().toISOString(),
+                        event: 'http_upload_progress',
+                        ip,
+                        method: req.method,
+                        path: url.pathname,
+                        bytes: total,
+                        durMs: Math.round(currentDurNs / 1e6),
+                        rateMBps: parseFloat(currentRate.toFixed(2)),
+                        ruleId
+                    });
+                }
+            });
+            req.on('end', () => {
+                try {
+                    dest?.end();
+                }
+                catch { }
+                const durNs = Number(process.hrtime.bigint() - started);
+                const secs = durNs / 1e9;
+                const mb = total / 1048576;
+                const rate = secs > 0 ? (mb / secs) : 0;
+                if (sinkPath) {
+                    try {
+                        const st = fs.statSync(sinkPath);
+                        console.log(`[HTTP] upload complete: ${(st.size / 1048576).toFixed(1)} MB written to ${sinkPath}`);
+                    }
+                    catch {
+                        console.log(`[HTTP] upload complete: ${mb.toFixed(1)} MB (stat failed for ${sinkPath})`);
+                    }
+                }
+                console.log(`[HTTP] octet-stream drained: ${mb.toFixed(1)} MB in ${secs.toFixed(3)}s (${rate.toFixed(1)} MB/s)`);
                 logJsonl({
                     ts: new Date().toISOString(),
-                    event: 'http_upload_progress',
+                    event: 'http_request_complete',
                     ip,
                     method: req.method,
                     path: url.pathname,
                     bytes: total,
-                    durMs: Math.round(currentDurNs / 1e6),
-                    rateMBps: parseFloat(currentRate.toFixed(2)),
-                    ruleId
+                    durMs: Math.round(durNs / 1e6),
+                    rateMBps: parseFloat(rate.toFixed(2)),
+                    ruleId,
+                    status
                 });
-            }
-        });
-        req.on('end', () => {
-            try {
-                dest?.end();
-            }
-            catch { }
-            const durNs = Number(process.hrtime.bigint() - started);
-            const secs = durNs / 1e9;
-            const mb = total / 1048576;
-            const rate = secs > 0 ? (mb / secs) : 0;
-            if (sinkPath) {
-                try {
-                    const st = fs.statSync(sinkPath);
-                    console.log(`[HTTP] upload complete: ${(st.size / 1048576).toFixed(1)} MB written to ${sinkPath}`);
+                if (syncUpload) {
+                    try {
+                        send(res, status, responseBody);
+                    }
+                    catch { }
                 }
-                catch {
-                    console.log(`[HTTP] upload complete: ${mb.toFixed(1)} MB (stat failed for ${sinkPath})`);
-                }
-            }
-            console.log(`[HTTP] octet-stream drained: ${mb.toFixed(1)} MB in ${secs.toFixed(3)}s (${rate.toFixed(1)} MB/s)`);
-            logJsonl({
-                ts: new Date().toISOString(),
-                event: 'http_request_complete',
-                ip,
-                method: req.method,
-                path: url.pathname,
-                bytes: total,
-                durMs: Math.round(durNs / 1e6),
-                rateMBps: parseFloat(rate.toFixed(2)),
-                ruleId,
-                status
             });
-            if (syncUpload) {
-                try {
-                    send(res, status, responseBody);
-                }
-                catch { }
-            }
-        });
-        req.resume();
+            req.resume();
+        }
         return true;
     }
     // Fallback: buffer (capped) and parse JSON body for standard rules
@@ -593,18 +804,30 @@ async function handleWithDSL(client, req, res) {
         }
         body += chunk;
     }
-    let parsedBody = {};
-    try {
-        if (body)
-            parsedBody = JSON.parse(body);
+    // T7101: Use codec-based body decoding
+    const decodeResult = decodeBody(body, headers['content-type']);
+    if (!decodeResult.success) {
+        const durNs = Number(process.hrtime.bigint() - startTime);
+        logJsonl({
+            ts: new Date().toISOString(),
+            event: 'http_request_complete',
+            ip,
+            method: req.method,
+            path: url.pathname,
+            bytes: received,
+            durMs: Math.round(durNs / 1e6),
+            status: 400,
+            error: 'decode_error'
+        });
+        send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
+        return true;
     }
-    catch { }
     const ctx = {
         $method: req.method || 'GET',
         $path: url.pathname,
         $headers: headers,
         $query: Object.fromEntries(url.searchParams.entries()),
-        $body: parsedBody
+        $body: decodeResult.data
     };
     const result = await applyRules(dslConfig, client, ctx);
     if (result) {
@@ -641,11 +864,10 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
         const reqStartTime = process.hrtime.bigint();
         const reqIp = req.socket.remoteAddress || 'unknown';
         const reqUrl = new URL(req.url || '/', 'http://localhost');
-        // T5061: Extract tenant from auth token
-        const authHeader = req.headers['authorization'] || '';
-        const token = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-        const bearerToken = token.startsWith('Bearer ') ? token.slice(7) : undefined;
-        const tenantId = bearerToken ? tenantManager.getTenantFromToken(bearerToken) : undefined;
+        // T5061 + T6104: Extract tenant from auth token (Authorization: Bearer or X-Token)
+        const headers = normalizeHeaders(req.headers);
+        const actualToken = extractToken(headers);
+        const tenantId = actualToken ? tenantManager.getTenantFromToken(actualToken) : undefined;
         // T5060: Check if draining (during reload or shutdown)
         if (isDraining) {
             const drainMode = process.env.CONDUIT_DRAIN_REJECT_NEW === 'true';
@@ -756,7 +978,6 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
             }
         }
         const origin = req.headers['origin'];
-        const xTokenHeader = req.headers['x-token'];
         // CORS: Handle OPTIONS preflight
         if (req.method === 'OPTIONS') {
             if (corsConfig.enabled && origin && isOriginAllowed(origin, corsConfig)) {
@@ -773,9 +994,9 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
         if (origin && corsConfig.enabled) {
             applyCorsHeaders(res, origin, corsConfig);
         }
-        // T5023: Auth check for protected endpoints (supports Authorization: Bearer and X-Token)
+        // T5023 + T6104: Auth check for protected endpoints (supports Authorization: Bearer and X-Token)
         if (tokenAllowlist && protectedEndpoints.includes(reqUrl.pathname)) {
-            if (!token || !tokenAllowlist.has(token)) {
+            if (!actualToken || !tokenAllowlist.has(actualToken)) {
                 logJsonl({
                     ts: new Date().toISOString(),
                     event: 'http_auth_failed',
@@ -792,12 +1013,13 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 return;
             }
         }
-        // T5061: Tenant rate limiting check (before global rate limiting)
+        // T6110: Tenant quota enforcement (rate limits)
         if (tenantId) {
-            const tenantAllowed = tenantManager.checkRateLimit(tenantId);
-            if (!tenantAllowed) {
+            const rateLimitResult = tenantManager.checkRateLimit(tenantId);
+            if (!rateLimitResult.allowed) {
                 activeGlobalConnections--;
                 const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                const retryAfter = rateLimitResult.retryAfter || 60;
                 logJsonl({
                     ts: new Date().toISOString(),
                     event: 'http_request_complete',
@@ -806,17 +1028,20 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                     path: reqUrl.pathname,
                     durMs: Math.round(durNs / 1e6),
                     status: 429,
-                    error: 'TenantRateLimitExceeded',
+                    error: 'TenantQuotaExceeded',
                     tenantId
                 });
+                tenantManager.trackError(tenantId);
+                recordMetrics(reqUrl.pathname, 429, Math.round(durNs / 1e6), 0, 0, undefined, tenantId);
                 res.writeHead(429, {
                     'content-type': 'application/json',
-                    'retry-after': '60'
+                    'retry-after': String(retryAfter)
                 });
                 res.end(JSON.stringify({
-                    error: 'Tenant Rate Limit Exceeded',
-                    code: 'TenantRateLimitExceeded',
-                    tenant: tenantId
+                    error: 'Too Many Requests',
+                    code: 'TenantQuotaExceeded',
+                    tenantId,
+                    retryAfter
                 }));
                 return;
             }
@@ -920,8 +1145,44 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                     }
                 }
             }
-            if (await handleWithDSL(client, req, res))
-                return;
+            // Handle metrics early to ensure expanded HTTP/WS metrics are returned
+            // even when DSL rules are active (the DSL metrics rule would otherwise
+            // proxy only backend metrics). This preserves the hard-coded enriched
+            // metrics response expected by tests and operators.
+            {
+                const earlyUrl = new URL(req.url || '/', 'http://localhost');
+                if (req.method === 'GET' && earlyUrl.pathname === '/v1/metrics') {
+                    try {
+                        const backendMetrics = await client.metrics();
+                        const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                        const durMs = Math.round(durNs / 1e6);
+                        const httpSummary = getMetricsSummary();
+                        const wsPart = typeof getWsMetricsLive === 'function' ? getWsMetricsLive() : (wsMetrics || {});
+                        const combinedMetrics = { ...backendMetrics, ...httpSummary, ws: wsPart };
+                        logJsonl({ ts: new Date().toISOString(), ip: reqIp, method: req.method, path: earlyUrl.pathname, durMs, status: 200 });
+                        recordMetrics(earlyUrl.pathname, 200, durMs, 0, JSON.stringify(combinedMetrics).length);
+                        send(res, 200, combinedMetrics);
+                    }
+                    catch (e) {
+                        const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                        const durMs = Math.round(durNs / 1e6);
+                        logJsonl({ ts: new Date().toISOString(), ip: reqIp, method: req.method, path: earlyUrl.pathname, durMs, status: 500, error: 'metrics_failed' });
+                        recordMetrics(earlyUrl.pathname, 500, durMs, 0, 0);
+                        send(res, 500, { error: 'metrics failed' });
+                    }
+                    return;
+                }
+            }
+            // Allow DSL to handle only non-core routes so that core endpoints
+            // (enqueue/stats/upload/queue/admin/metrics) retain enriched behavior
+            // and metrics accounting.
+            const dslUrl = new URL(req.url || '/', 'http://localhost');
+            const corePaths = new Set(['/v1/enqueue', '/v1/stats', '/v1/upload', '/v1/queue', '/v1/admin/reload', '/v1/metrics']);
+            const isCore = corePaths.has(dslUrl.pathname);
+            if (!isCore) {
+                if (await handleWithDSL(client, req, res))
+                    return;
+            }
             const url = new URL(req.url || '/', 'http://localhost');
             if (req.method === 'GET' && url.pathname === '/health') {
                 const durNs = Number(process.hrtime.bigint() - reqStartTime);
@@ -942,28 +1203,106 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 req.on('data', c => body += c);
                 req.on('end', () => {
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                    // T7101: Use codec-based decoding
+                    const decodeResult = decodeBody(body, headers['content-type']);
+                    if (!decodeResult.success) {
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec });
+                        const durMs = Math.round(durNs / 1e6);
+                        recordMetrics(url.pathname, 400, durMs, body.length, 0);
+                        send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
+                        return;
+                    }
                     try {
-                        const { to, envelope } = JSON.parse(body || '{}');
+                        const { to, envelope } = decodeResult.data;
                         client.enqueue(to, envelope).then(r => {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200 });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, codec: decodeResult.codec });
+                            const durMs = Math.round(durNs / 1e6);
+                            const outBytes = Buffer.byteLength(JSON.stringify(r));
+                            recordMetrics(url.pathname, 200, durMs, body.length, outBytes);
                             send(res, 200, r);
                         }).catch(e => {
-                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed' });
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'enqueue_failed', codec: decodeResult.codec });
+                            const durMs = Math.round(durNs / 1e6);
+                            recordMetrics(url.pathname, 400, durMs, body.length, 0);
                             send(res, 400, { error: e?.detail || e?.message || 'bad request' });
                         });
                     }
                     catch (e) {
-                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_json' });
-                        send(res, 400, { error: e?.message || 'invalid json' });
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'invalid_request', codec: decodeResult.codec });
+                        const durMs = Math.round(durNs / 1e6);
+                        recordMetrics(url.pathname, 400, durMs, body.length, 0);
+                        send(res, 400, { error: e?.message || 'invalid request' });
+                    }
+                });
+                return;
+            }
+            // T6103: POST /v1/queue - Enqueue to Queue backend and return queueRef
+            if (req.method === 'POST' && url.pathname === '/v1/queue') {
+                if (!queueSink) {
+                    const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                    logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 503, error: 'queue_backend_not_configured' });
+                    send(res, 503, { error: 'Queue backend not configured. Set CONDUIT_QUEUE_BACKEND=bullmq and CONDUIT_QUEUE_REDIS_URL.' });
+                    return;
+                }
+                let body = '';
+                req.on('data', c => body += c);
+                req.on('end', async () => {
+                    const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                    // T7101: Use codec-based decoding
+                    const decodeResult = decodeBody(body, headers['content-type']);
+                    if (!decodeResult.success) {
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'decode_error', codec: decodeResult.codec });
+                        send(res, 400, { error: 'Request body decode failed', details: decodeResult.error, codec: decodeResult.codec });
+                        return;
+                    }
+                    try {
+                        const payload = decodeResult.data;
+                        const { queue, message } = payload;
+                        if (!queue) {
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_queue', codec: decodeResult.codec });
+                            send(res, 400, { error: 'Missing required field: queue' });
+                            return;
+                        }
+                        if (!message) {
+                            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 400, error: 'missing_message', codec: decodeResult.codec });
+                            send(res, 400, { error: 'Missing required field: message' });
+                            return;
+                        }
+                        const queueRef = await queueSink.send(message, {
+                            queue,
+                            jobId: payload.jobId,
+                            jobName: payload.jobName,
+                            priority: payload.priority,
+                            delayMs: payload.delayMs,
+                            maxRetries: payload.maxRetries,
+                            timeout: payload.timeout
+                        });
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 200, ruleId: 'queue_enqueue', codec: decodeResult.codec });
+                        recordMetrics(url.pathname, 200, Math.round(durNs / 1e6), body.length, 0, 'queue_enqueue');
+                        send(res, 200, {
+                            queueRef: {
+                                queueId: queueRef.jobId,
+                                queue: queueRef.queue,
+                                enqueuedAt: queueRef.timestamp,
+                                backend: queueRef.backend,
+                                state: queueRef.state,
+                                priority: queueRef.priority
+                            }
+                        });
+                    }
+                    catch (e) {
+                        logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, bytes: body.length, durMs: Math.round(durNs / 1e6), status: 500, error: 'queue_enqueue_failed', codec: decodeResult.codec });
+                        send(res, 500, { error: e?.message || 'Queue enqueue failed' });
                     }
                 });
                 return;
             }
             // T5010: Enhanced multipart/form-data streaming with safety limits
             if (req.method === 'POST' && url.pathname === '/v1/upload') {
-                // T5061: Check per-tenant upload limits first
+                // T6110: Check per-tenant upload quota
                 if (tenantId) {
-                    if (!tenantManager.canStartUpload(tenantId)) {
+                    const uploadQuota = tenantManager.canStartUpload(tenantId);
+                    if (!uploadQuota.allowed) {
                         const durNs = Number(process.hrtime.bigint() - reqStartTime);
                         logJsonl({
                             ts: new Date().toISOString(),
@@ -972,18 +1311,23 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                             method: req.method,
                             path: url.pathname,
                             durMs: Math.round(durNs / 1e6),
-                            status: 503,
-                            error: 'TenantUploadLimitExceeded',
+                            status: 429,
+                            error: 'TenantUploadQuotaExceeded',
                             tenantId
                         });
-                        res.writeHead(503, {
+                        tenantManager.trackError(tenantId);
+                        recordMetrics(url.pathname, 429, Math.round(durNs / 1e6), 0, 0, undefined, tenantId);
+                        res.writeHead(429, {
                             'content-type': 'application/json',
-                            'retry-after': '30'
+                            'retry-after': '10'
                         });
                         res.end(JSON.stringify({
-                            error: 'Tenant upload limit exceeded',
-                            code: 'TenantUploadLimitExceeded',
-                            tenantId
+                            error: 'Too Many Requests',
+                            code: 'TenantUploadQuotaExceeded',
+                            tenantId,
+                            current: uploadQuota.current,
+                            limit: uploadQuota.limit,
+                            retryAfter: 10
                         }));
                         return;
                     }
@@ -1406,6 +1750,71 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 }
                 return;
             }
+            // T6102: Admin reload endpoint
+            if (req.method === 'POST' && url.pathname === '/v1/admin/reload') {
+                try {
+                    const reloadStartTime = Date.now();
+                    let rulesCount = 0;
+                    let tenantsCount = 0;
+                    const errors = [];
+                    // Reload DSL rules if configured
+                    if (process.env.CONDUIT_RULES) {
+                        try {
+                            reloadDSL();
+                            rulesCount = dslConfig?.rules.length || 0;
+                        }
+                        catch (err) {
+                            errors.push(`DSL reload failed: ${err.message}`);
+                        }
+                    }
+                    // Reload tenant configuration
+                    try {
+                        reloadTenants();
+                        const tenantMetrics = tenantManager.getMetrics();
+                        tenantsCount = Object.keys(tenantMetrics).length;
+                    }
+                    catch (err) {
+                        errors.push(`Tenant reload failed: ${err.message}`);
+                    }
+                    const status = errors.length === 0 ? 'reloaded' : 'partial';
+                    const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                    logJsonl({
+                        ts: new Date().toISOString(),
+                        event: 'http_admin_reload',
+                        ip: reqIp,
+                        method: req.method,
+                        path: url.pathname,
+                        durMs: Math.round(durNs / 1e6),
+                        status: errors.length === 0 ? 200 : 207,
+                        rulesCount,
+                        tenantsCount
+                    });
+                    const responseStatus = errors.length === 0 ? 200 : 207;
+                    recordMetrics(url.pathname, responseStatus, Math.round(durNs / 1e6), 0, 0);
+                    send(res, responseStatus, {
+                        status,
+                        timestamp: new Date().toISOString(),
+                        rulesCount,
+                        tenantsCount,
+                        errors: errors.length > 0 ? errors : undefined
+                    });
+                }
+                catch (e) {
+                    const durNs = Number(process.hrtime.bigint() - reqStartTime);
+                    logJsonl({
+                        ts: new Date().toISOString(),
+                        event: 'http_request_complete',
+                        ip: reqIp,
+                        method: req.method,
+                        path: url.pathname,
+                        durMs: Math.round(durNs / 1e6),
+                        status: 500,
+                        error: 'reload_failed'
+                    });
+                    send(res, 500, { error: e.message || 'Reload failed' });
+                }
+                return;
+            }
             if (req.method === 'GET' && url.pathname === '/v1/stats') {
                 const stream = url.searchParams.get('stream');
                 if (!stream) {
@@ -1416,11 +1825,16 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 }
                 client.stats(stream).then(r => {
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
-                    logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 200 });
+                    const durMs = Math.round(durNs / 1e6);
+                    logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs, status: 200 });
+                    const outBytes = Buffer.byteLength(JSON.stringify(r));
+                    recordMetrics(url.pathname, 200, durMs, 0, outBytes);
                     send(res, 200, r);
                 }).catch(() => {
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
-                    logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs: Math.round(durNs / 1e6), status: 500, error: 'stats_failed' });
+                    const durMs = Math.round(durNs / 1e6);
+                    logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: url.pathname, durMs, status: 500, error: 'stats_failed' });
+                    recordMetrics(url.pathname, 500, durMs, 0, 0);
                     send(res, 500, { error: 'stats failed' });
                 });
                 return;
@@ -1431,11 +1845,13 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                     const durMs = Math.round(durNs / 1e6);
                     // T5042: Combine backend metrics with HTTP metrics
                     const httpSummary = getMetricsSummary();
-                    const combinedMetrics = Object.assign({}, backendMetrics, httpSummary, { ws: wsMetrics || {} });
+                    const wsPart = typeof getWsMetricsLive === 'function' ? getWsMetricsLive() : (wsMetrics || {});
+                    const combinedMetrics = { ...backendMetrics, ...httpSummary, ws: wsPart };
                     logJsonl({ ts: new Date().toISOString(), ip: reqIp, method: req.method, path: url.pathname, durMs, status: 200 });
                     recordMetrics(url.pathname, 200, durMs, 0, JSON.stringify(combinedMetrics).length);
                     send(res, 200, combinedMetrics);
-                }).catch(() => {
+                }).catch((err) => {
+                    console.error('[ERROR-METRICS] Failed to get metrics:', err);
                     const durNs = Number(process.hrtime.bigint() - reqStartTime);
                     const durMs = Math.round(durNs / 1e6);
                     logJsonl({ ts: new Date().toISOString(), ip: reqIp, method: req.method, path: url.pathname, durMs, status: 500, error: 'metrics_failed' });
@@ -1454,7 +1870,9 @@ export function startHttp(client, port = 9087, bind = '127.0.0.1') {
                 return;
             }
             const durNs = Number(process.hrtime.bigint() - reqStartTime);
-            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: reqUrl.pathname, durMs: Math.round(durNs / 1e6), status: 404, error: 'not_found' });
+            const durMs = Math.round(durNs / 1e6);
+            logJsonl({ ts: new Date().toISOString(), event: 'http_request_complete', ip: reqIp, method: req.method, path: reqUrl.pathname, durMs: durMs, status: 404, error: 'not_found' });
+            recordMetrics(reqUrl.pathname, 404, durMs, 0, 0);
             res.writeHead(404).end();
         }
         catch (e) {

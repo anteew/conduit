@@ -5,6 +5,7 @@ import { TenantManager } from '../tenancy/tenant-manager.js';
 import { WSRateLimiter } from './ws-rate-limiter.js';
 import { getCodecByName } from '../codec/registry.js';
 import { jsonCodec } from '../codec/json.js';
+import { getGuardrailsFromEnv, checkDecodedPayload } from '../codec/guards.js';
 let connCounter = 0;
 function generateConnId() {
     return `ws-${Date.now()}-${++connCounter}`;
@@ -119,7 +120,9 @@ const wsMetrics = {
     creditsGranted: 0,
     deliveriesTotal: 0,
     errorsTotal: 0,
-    errorsByType: new Map()
+    errorsByType: new Map(),
+    sizeCapViolations: new Map(),
+    depthCapViolations: new Map()
 };
 export function getWsMetrics() {
     return {
@@ -130,7 +133,9 @@ export function getWsMetrics() {
         creditsGranted: wsMetrics.creditsGranted,
         deliveriesTotal: wsMetrics.deliveriesTotal,
         errorsTotal: wsMetrics.errorsTotal,
-        errorsByType: Object.fromEntries(wsMetrics.errorsByType)
+        errorsByType: Object.fromEntries(wsMetrics.errorsByType),
+        sizeCapViolations: Object.fromEntries(wsMetrics.sizeCapViolations),
+        depthCapViolations: Object.fromEntries(wsMetrics.depthCapViolations)
     };
 }
 let isDraining = false;
@@ -387,6 +392,31 @@ export function startWs(client, port = 9088, bind = '127.0.0.1', codecRegistry) 
                     // T7112: Send error frame before closing
                     console.error(`[WS] Codec decode error for ${connId} (codec=${connState.codecName}): ${errorMapping.message}`);
                     sendError(ws, errorMapping.code, errorMapping.message, errorMapping.closeCode, connState.codec);
+                    return;
+                }
+                // T7120: Check decoded payload size and depth caps
+                const guardrails = getGuardrailsFromEnv();
+                const check = checkDecodedPayload(msg, guardrails);
+                if (check.valid === false) {
+                    wsMetrics.errorsTotal++;
+                    const errorCode = check.reason === 'decoded_size_exceeded' ? 'DecodedSizeExceeded' : 'DepthExceeded';
+                    wsMetrics.errorsByType.set(errorCode, (wsMetrics.errorsByType.get(errorCode) || 0) + 1);
+                    if (check.reason === 'decoded_size_exceeded') {
+                        wsMetrics.sizeCapViolations.set(connState.codecName, (wsMetrics.sizeCapViolations.get(connState.codecName) || 0) + 1);
+                    }
+                    else if (check.reason === 'depth_exceeded') {
+                        wsMetrics.depthCapViolations.set(connState.codecName, (wsMetrics.depthCapViolations.get(connState.codecName) || 0) + 1);
+                    }
+                    logWsEvent({
+                        ts: new Date().toISOString(),
+                        connId,
+                        ip: clientIp,
+                        stream,
+                        codec: connState.codecName,
+                        error: `${errorCode}: limit=${check.limit}, actual=${check.actual}`
+                    });
+                    console.error(`[WS] ${errorCode} for ${connId} (codec=${connState.codecName}): limit=${check.limit}, actual=${check.actual}`);
+                    sendError(ws, errorCode, `Decoded payload ${check.reason}: limit=${check.limit}, actual=${check.actual}`, 1007, connState.codec);
                     return;
                 }
                 if (typeof msg.credit === 'number') {

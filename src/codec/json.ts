@@ -14,3 +14,20 @@ export const jsonCodec: Codec = {
   }
 };
 
+// T7110: JsonCodec class for tests
+export class JsonCodec implements Codec {
+  name = 'json';
+  contentTypes = ['application/json', 'text/json', 'application/*+json'];
+  isBinary = false;
+
+  encode(obj: any): Uint8Array {
+    const s = JSON.stringify(obj);
+    return Buffer.from(s, 'utf8');
+  }
+
+  decode(buf: Uint8Array | string): any {
+    const s = typeof buf === 'string' ? buf : Buffer.from(buf).toString('utf8');
+    return JSON.parse(s);
+  }
+}
+

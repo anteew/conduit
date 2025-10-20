@@ -10,6 +10,7 @@
     "test:unit": "npm run test:compile && node tests_compiled/http_bidir.test.js",
     "test:int": "npm run test:compile && node tests_compiled/ws_bidir.test.js",
     "bench:small": "npm run test:compile && node tests_compiled/perf_small.test.js",
+    "bench:codec-small": "node tests/bench_codec_small.js",
     "bench:large": "npm run test:compile && node tests_compiled/large_payload.test.js",
     "test:load-ws": "npm run test:compile && node tests_compiled/concurrent_ws.test.js",
     "test:load-uploads": "npm run test:compile && node tests_compiled/concurrent_uploads.test.js",

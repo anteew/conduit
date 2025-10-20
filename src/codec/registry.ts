@@ -50,6 +50,32 @@ export function chooseForHttpResponse(accept?: string, def?: string): Codec {
   return defaultCodec;
 }
 
+// T7110: CodecRegistry class for WS codec negotiation
+export class CodecRegistry {
+  private codecs = new Map<string, Codec>();
+  private defaultCodecName: string;
+
+  constructor(options: { defaultCodec: string }) {
+    this.defaultCodecName = options.defaultCodec;
+  }
+
+  register(codec: Codec) {
+    this.codecs.set(codec.name, codec);
+  }
+
+  get(name: string): Codec | undefined {
+    return this.codecs.get(name);
+  }
+
+  list(): Codec[] {
+    return Array.from(this.codecs.values());
+  }
+
+  getDefault(): Codec {
+    return this.codecs.get(this.defaultCodecName) || jsonCodec;
+  }
+}
+
 // Bootstrap defaults
 registerCodec(jsonCodec);
 registerCodec(msgpackCodec);
