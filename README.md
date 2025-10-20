@@ -77,6 +77,25 @@ curl http://127.0.0.1:9087/health
   - HTTP Codecs (when `CONDUIT_CODECS_HTTP=true`): per‑codec requests, bytes in/out, decode errors, size/depth cap violations, and encode/decode latency summaries (p50/p95)
   - WebSocket: connections, messages, credits, deliveries, errors (optional: codec metrics when enabled)
 
+### Enabling Codecs (HTTP/WS)
+
+Codecs are opt‑in and gated at module init. Set flags before the process starts:
+
+```bash
+export CONDUIT_CODECS_HTTP=true
+export CONDUIT_CODECS_WS=true
+npm run dev
+```
+
+Notes:
+- The flags are read when modules are loaded. In tests, set env before importing connectors. For example:
+  ```ts
+  process.env.CONDUIT_CODECS_HTTP = 'true';
+  const httpMod = await import('./src/connectors/http.js');
+  ```
+- HTTP request‑body decode honors `Content-Type: application/msgpack` (and `application/vnd.msgpack`) when `CONDUIT_CODECS_HTTP=true`.
+- WS negotiation accepts `?codec=msgpack` or `Sec-WebSocket-Protocol: msgpack`, and falls back to JSON if msgpack is unavailable.
+
 #### Codecs — Quick Examples
 
 HTTP (MessagePack response negotiation):
