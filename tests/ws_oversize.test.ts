@@ -20,10 +20,14 @@ async function startServer() {
       ...process.env,
       CONDUIT_CODECS_WS: 'true',
       CONDUIT_WS_MAX_MESSAGE_SIZE: MAX_SIZE.toString(),
+      CONDUIT_BIND: TEST_HOST,
+      CONDUIT_WS_PORT: String(TEST_PORT),
+      CONDUIT_HTTP_PORT: '0',
+      CONDUIT_SHUTDOWN_TIMEOUT_MS: '0',
       NODE_ENV: 'test'
     };
     
-    serverProcess = spawn('node', ['dist/server.js'], { 
+    serverProcess = spawn('node', ['dist/index.js'], { 
       env,
       stdio: ['ignore', 'ignore', 'ignore']
     });
@@ -34,7 +38,7 @@ async function startServer() {
 
 async function stopServer() {
   if (serverProcess) {
-    serverProcess.kill();
+    try { serverProcess.kill('SIGKILL'); } catch {}
     serverProcess = null;
     await new Promise((resolve) => setTimeout(resolve, 500));
   }

@@ -1,5 +1,8 @@
 import { startHttp, makeClientWithDemo, makeClientWithTerminal, setWsMetrics } from './connectors/http.js';
 import { startWs, getWsMetrics } from './connectors/ws.js';
+import { CodecRegistry } from './codec/registry.js';
+import { JsonCodec } from './codec/json.js';
+import { createMsgPackCodec } from './codec/msgpack.js';
 import { Recorder } from './control/record.js';
 import { parseBackendURL } from './control/terminal.js';
 
@@ -32,7 +35,16 @@ if (terminalConfig) {
 }
 
 httpServer = startHttp(client, httpPort, bind);
-wsServer = startWs(client, wsPort, bind);
+// If WS codecs feature flag is enabled, build a registry for negotiation
+let wsCodecRegistry: CodecRegistry | undefined;
+if (process.env.CONDUIT_CODECS_WS === 'true') {
+  wsCodecRegistry = new CodecRegistry({ defaultCodec: 'json' });
+  wsCodecRegistry.register(new JsonCodec());
+  const maybeMsgpack = await createMsgPackCodec();
+  if (maybeMsgpack) wsCodecRegistry.register(maybeMsgpack);
+}
+
+wsServer = startWs(client, wsPort, bind, wsCodecRegistry);
 
 // T5042: Wire up WS metrics to HTTP metrics endpoint
 setInterval(() => {
